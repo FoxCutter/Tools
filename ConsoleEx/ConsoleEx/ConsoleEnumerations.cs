@@ -46,7 +46,7 @@ namespace ConsoleLib
         WrapAtEOL                   = 0x0002,
         VirutalTerminalProcessing   = 0x0004,
         DisableNewLineAutoReturn    = 0x0008,
-        LVBGridWoldview             = 0x0010,
+        LVBGridWoldwide             = 0x0010,
     }
     
     
@@ -68,32 +68,54 @@ namespace ConsoleLib
         Set_Fullscreen = 1,
         Set_Windowed = 2,
     }
+
+    [Flags]
+    public enum CharacterAttributeEnum : ushort
+    {
+        FOREGROUND_BLUE             = 0x0001, // text color contains blue.
+        FOREGROUND_GREEN            = 0x0002, // text color contains green.
+        FOREGROUND_RED              = 0x0004, // text color contains red.
+        FOREGROUND_INTENSITY        = 0x0008, // text color is intensified.
+
+        BACKGROUND_BLUE             = 0x0010, // background color contains blue.
+        BACKGROUND_GREEN            = 0x0020, // background color contains green.
+        BACKGROUND_RED              = 0x0040, // background color contains red.
+        BACKGROUND_INTENSITY        = 0x0080, // background color is intensified.
+
+        COMMON_LVB_LEADING_BYTE     = 0x0100, // Leading byte.
+        COMMON_LVB_TRAILING_BYTE    = 0x0200, // Trailing byte.
+        COMMON_LVB_GRID_HORIZONTAL  = 0x0400, // Top horizontal.
+        COMMON_LVB_GRID_LVERTICAL   = 0x0800, // Left vertical.
+        COMMON_LVB_GRID_RVERTICAL   = 0x1000, // Right vertical.
+        COMMON_LVB_REVERSE_VIDEO    = 0x4000, // Reverse foreground and background attributes.
+        COMMON_LVB_UNDERSCORE       = 0x8000, // Underscore.
+    }
        
     // Making a special struct for this to simplify the converstion from the preexisting ConsoleColor enum to the
     // direct character attributes (the values for both are the same).
     [StructLayout(LayoutKind.Sequential)]
     public struct CharacterAttribute
     {
-        public WinAPI.CharacterAttributeEnum Value;
+        public CharacterAttributeEnum Value;
 
-        public CharacterAttribute(WinAPI.CharacterAttributeEnum nAttribute)
+        public CharacterAttribute(CharacterAttributeEnum nAttribute)
         {
             Value = nAttribute;
         }
 
         public CharacterAttribute(int nAttribute)
         {
-            Value = (WinAPI.CharacterAttributeEnum)nAttribute;
+            Value = (CharacterAttributeEnum)nAttribute;
         }
 
         public CharacterAttribute(System.ConsoleColor Foreground, System.ConsoleColor Background)
         {
-            Value = (WinAPI.CharacterAttributeEnum)(((ushort)Background << 4) | (ushort)Foreground);
+            Value = (CharacterAttributeEnum)(((ushort)Background << 4) | (ushort)Foreground);
         }
 
         public void SetCharacterAttribute(System.ConsoleColor Foreground, System.ConsoleColor Background)
         {
-            Value = (WinAPI.CharacterAttributeEnum)(((ushort)Background << 4) | (ushort)Foreground);
+            Value = (CharacterAttributeEnum)(((ushort)Background << 4) | (ushort)Foreground);
         }
 
         public ConsoleColor Foreground
@@ -107,7 +129,7 @@ namespace ConsoleLib
                 short fg = (short)value;
                 short bg = (short)((ushort)Value & 0xF0);
 
-                Value = (WinAPI.CharacterAttributeEnum)(bg | fg);
+                Value = (CharacterAttributeEnum)(bg | fg);
             }
         }
 
@@ -122,7 +144,7 @@ namespace ConsoleLib
                 short fg = (short)((ushort)Value & 0x0F);
                 short bg = (short)((ushort)value << 4);
 
-                Value = (WinAPI.CharacterAttributeEnum)(bg | fg);
+                Value = (CharacterAttributeEnum)(bg | fg);
             }
         }
     }

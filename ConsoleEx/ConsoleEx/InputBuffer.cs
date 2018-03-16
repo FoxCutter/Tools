@@ -4,15 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Microsoft.Win32.SafeHandles;
 
 namespace ConsoleLib
 {
     public class InputBuffer : IDisposable
     {
-        IntPtr BufferHandle = WinAPI.INVALID_HANDLE_VALUE;
+        Microsoft.Win32.SafeHandles.SafeFileHandle BufferHandle;
         bool FreeHandle;
-        
-        public InputBuffer(IntPtr Handle)
+        System.IO.TextReader InputStream = null;
+
+        public InputBuffer(Microsoft.Win32.SafeHandles.SafeFileHandle Handle)
         {
             // If we're being attached to an existing handle, sanity check that it's something we can work with.
             if (WinAPI.GetFileType(Handle) != WinAPI.FileTypes.Character)
@@ -27,9 +29,9 @@ namespace ConsoleLib
 
         static internal InputBuffer OpenCurrentInputBuffer()
         {
-            IntPtr Handle = ConsoleEx.GetConsoleInputHandle();
+            Microsoft.Win32.SafeHandles.SafeFileHandle Handle = ConsoleEx.GetConsoleInputHandle();
 
-            if (Handle == WinAPI.INVALID_HANDLE_VALUE)
+            if (Handle.IsInvalid)
                 return null;
             
             InputBuffer Ret = new InputBuffer(Handle);
@@ -55,20 +57,30 @@ namespace ConsoleLib
 
         public void Dispose(bool Disposing)
         {
-            if (FreeHandle && BufferHandle != WinAPI.INVALID_HANDLE_VALUE)
-                WinAPI.CloseHandle(BufferHandle);
-
-            BufferHandle = WinAPI.INVALID_HANDLE_VALUE;
-
+            if (FreeHandle && !BufferHandle.IsClosed)
+                BufferHandle.Close();
         }
 
         #endregion
 
         #region Properties
 
-        public IntPtr Handle
+        internal Microsoft.Win32.SafeHandles.SafeFileHandle Handle
         {
             get { return BufferHandle; }
+        }
+
+        public System.IO.TextReader Stream
+        {
+            get
+            {
+                if (InputStream == null)
+                {
+                    //InputStream = new System.IO.StreamReader(new System.IO.(BufferHandle, System.IO.FileAccess.Read));
+                }
+
+                return InputStream;
+            }
         }
 
         public ConsoleExInputMode Mode
@@ -125,9 +137,160 @@ namespace ConsoleLib
 
                 return false;
             }
-
         }
 
+        public bool EchoInput
+        {
+            get
+            {
+                return (Mode & ConsoleExInputMode.EchoInput) == ConsoleExInputMode.EchoInput;
+            }
+
+            set
+            {
+                if (value)
+                    Mode |= ConsoleExInputMode.EchoInput;
+                else
+                    Mode &= ~ConsoleExInputMode.EchoInput;
+            }
+        }
+
+        public bool InsertMode
+        {
+            get
+            {
+                return (Mode & ConsoleExInputMode.InsertMode) == ConsoleExInputMode.InsertMode;
+            }
+
+            set
+            {
+                if (value)
+                    Mode |= ConsoleExInputMode.InsertMode | ConsoleExInputMode.ExtendedFlags;
+                else
+                    Mode &= ~ConsoleExInputMode.InsertMode;
+            }
+        }
+
+        public bool LineInput
+        {
+            get
+            {
+                return (Mode & ConsoleExInputMode.LineInput) == ConsoleExInputMode.LineInput;
+            }
+
+            set
+            {
+                if (value)
+                    Mode |= ConsoleExInputMode.LineInput;
+                else
+                    Mode &= ~ConsoleExInputMode.LineInput;
+            }
+        }
+
+        public bool MouseInput
+        {
+            get
+            {
+                return (Mode & ConsoleExInputMode.MouseInput) == ConsoleExInputMode.MouseInput;
+            }
+
+            set
+            {
+                if (value)
+                    Mode |= ConsoleExInputMode.MouseInput;
+                else
+                    Mode &= ~ConsoleExInputMode.MouseInput;
+            }
+        }
+
+        public bool ProcessedInput
+        {
+            get
+            {
+                return (Mode & ConsoleExInputMode.ProcessedInput) == ConsoleExInputMode.ProcessedInput;
+            }
+
+            set
+            {
+                if (value)
+                    Mode |= ConsoleExInputMode.ProcessedInput;
+                else
+                    Mode &= ~ConsoleExInputMode.ProcessedInput;
+            }
+        }
+
+        public bool QuickEditMode
+        {
+            get
+            {
+                return (Mode & ConsoleExInputMode.QuickEditMode) == ConsoleExInputMode.QuickEditMode;
+            }
+
+            set
+            {
+                if (value)
+                    Mode |= ConsoleExInputMode.QuickEditMode | ConsoleExInputMode.ExtendedFlags;
+                else
+                    Mode &= ~ConsoleExInputMode.QuickEditMode;
+            }
+        }
+
+        public bool WindowInput
+        {
+            get
+            {
+                return (Mode & ConsoleExInputMode.WindowInput) == ConsoleExInputMode.WindowInput;
+            }
+
+            set
+            {
+                if (value)
+                    Mode |= ConsoleExInputMode.WindowInput;
+                else
+                    Mode &= ~ConsoleExInputMode.WindowInput;
+            }
+        }
+
+        public bool VirtualTerminal
+        {
+            get
+            {
+                return (Mode & ConsoleExInputMode.VirutalTerminalInput) == ConsoleExInputMode.VirutalTerminalInput;
+            }
+
+            set
+            {
+                if (value)
+                    Mode |= ConsoleExInputMode.VirutalTerminalInput;
+                else
+                    Mode &= ~ConsoleExInputMode.VirutalTerminalInput;
+            }
+        }
+
+        public bool CapsLock 
+        {
+            get
+            {
+                return WinAPI.GetKeyState(0x14) != 0;
+            }
+        }
+
+        public bool NumberLock
+        {
+            get
+            {
+                return WinAPI.GetKeyState(0x90) != 0;
+            }
+        }               
+
+        public bool ScrollLock
+        {
+            get
+            {
+                return WinAPI.GetKeyState(0x91) != 0;
+            }
+        }  
+        
         #endregion
 
         #region Events

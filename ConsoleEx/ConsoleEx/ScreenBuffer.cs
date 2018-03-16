@@ -3,13 +3,53 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Win32.SafeHandles;
 
 namespace ConsoleLib
 {
     public class ScreenBuffer : IDisposable
     {
-        IntPtr BufferHandle = WinAPI.INVALID_HANDLE_VALUE;
+        /* 
+        TODO: From System.Console
+        
+        public static void Write    (bool value);
+        public static void WriteLine(bool value);
+        public static void Write    (decimal value);
+        public static void WriteLine(decimal value);
+        public static void Write    (double value);
+        public static void WriteLine(double value);
+        public static void Write    (float value);
+        public static void WriteLine(float value);
+        public static void Write    (int value);
+        public static void WriteLine(int value);
+        public static void Write    (long value);
+        public static void WriteLine(long value);
+        public static void Write    (object value);
+        public static void WriteLine(object value);
+        public static void Write    (uint value);
+        public static void WriteLine(uint value);
+        public static void Write    (ulong value);
+        public static void WriteLine(ulong value);
+
+        public static void Write    (string format, params object[] arg);
+        public static void WriteLine(string format, params object[] arg);
+        public static void Write    (string format, object arg0);
+        public static void WriteLine(string format, object arg0);
+        public static void Write    (string format, object arg0, object arg1);
+        public static void WriteLine(string format, object arg0, object arg1);
+        public static void Write    (string format, object arg0, object arg1, object arg2);
+        public static void WriteLine(string format, object arg0, object arg1, object arg2);
+        public static void Write    (string format, object arg0, object arg1, object arg2, object arg3);
+        public static void WriteLine(string format, object arg0, object arg1, object arg2, object arg3);
+         
+        public static void Write    (char[] buffer, int index, int count);
+        public static void WriteLine(char[] buffer, int index, int count);
+         */
+
+        Microsoft.Win32.SafeHandles.SafeFileHandle BufferHandle;
         bool FreeHandle;
+        CharacterAttribute OriginalAttributes;
+        System.IO.TextWriter OutputStream = null;
 
         public ScreenBuffer()
         {
@@ -18,10 +58,12 @@ namespace ConsoleLib
             BufferHandle = WinAPI.CreateConsoleScreenBuffer(WinAPI.DesiredAccess.GENERIC_READ | WinAPI.DesiredAccess.GENERIC_WRITE, WinAPI.ShareMode.FILE_SHARE_READ | WinAPI.ShareMode.FILE_SHARE_WRITE,
                                                             IntPtr.Zero, WinAPI.ConsoleFlags.TextModeBuffer, IntPtr.Zero);
 
-            if (BufferHandle == WinAPI.INVALID_HANDLE_VALUE)
+            if (BufferHandle.IsInvalid)
             {
                 throw new ConsoleExException("ConsoleEx: Unable to create a screen buffer.");
             }
+
+            OriginalAttributes = Attribute;
         }
 
         public ScreenBuffer(ScreenBuffer CloneFrom, bool CopyContents = false) : this()
@@ -43,25 +85,39 @@ namespace ConsoleLib
 
             if (CopyContents)
             {
-                CharInfo[,]Buffer = new CharInfo[BufferHeight, BufferWidth];
-                WinAPI.Coord BufferSize = TempBufferInfo.BufferSize;
+                // ReadConsoleOutput has a soft limited of 64K of data, but can go lower depending on heap usage.
+                // Because of that we will limit ourselves to 32k per a copy, which works out to 8192 CharInfos.
+                // So we will calculate the best size of buffer to fit into that.
+                short BufferBlockWidth = TempBufferInfo.BufferSize.X;
+                short BufferBlockHeight = (short)(0x2000 / TempBufferInfo.BufferSize.X);
+
+                CharInfo[,] Buffer = new CharInfo[BufferBlockHeight, BufferBlockWidth];
+                WinAPI.Coord BufferSize = new WinAPI.Coord(BufferBlockWidth, BufferBlockHeight);                
                 WinAPI.Coord BufferPos = new WinAPI.Coord(0, 0);
-                WinAPI.SmallRect Region = new WinAPI.SmallRect(0, 0, BufferWidth, BufferHeight);
+                WinAPI.SmallRect Region = new WinAPI.SmallRect(0, 0, BufferSize.X - 1, BufferBlockHeight - 1);
 
-                if (!WinAPI.ReadConsoleOutput(CloneFrom.BufferHandle, Buffer, BufferSize, BufferPos, ref Region))
+                while (Region.Top <= TempBufferInfo.BufferSize.Y)
                 {
-                    throw new ConsoleExException("ConsoleEx: Unable to read source screen buffer.");
-                }
+                    if (!WinAPI.ReadConsoleOutput(CloneFrom.BufferHandle, Buffer, BufferSize, BufferPos, ref Region))
+                    {
+                        throw new ConsoleExException("ConsoleEx: Unable to read source screen buffer.");
+                    }
 
-                if (!WinAPI.WriteConsoleOutput(BufferHandle, Buffer, BufferSize, BufferPos, ref Region))
-                {
-                    throw new ConsoleExException("ConsoleEx: Unable to write to screen buffer.");
+                    if (!WinAPI.WriteConsoleOutput(BufferHandle, Buffer, BufferSize, BufferPos, ref Region))
+                    {
+                        throw new ConsoleExException("ConsoleEx: Unable to write to screen buffer.");
+                    }
+
+                    Region.Top += BufferBlockHeight;
+                    Region.Bottom += BufferBlockHeight;
                 }
             }
+
+            OriginalAttributes = Attribute;
         }
 
-        
-        public ScreenBuffer(IntPtr Handle)
+
+        public ScreenBuffer(Microsoft.Win32.SafeHandles.SafeFileHandle Handle)
         {
             // If we're being attached to an existing handle, sanity check that it's something we can work with.
             if (WinAPI.GetFileType(Handle) != WinAPI.FileTypes.Character)
@@ -72,13 +128,15 @@ namespace ConsoleLib
             // Flag that we're attached to the handle, so we don't accidently free it.            
             FreeHandle = false;
             BufferHandle = Handle;
+
+            OriginalAttributes = Attribute;
         }
 
         static internal ScreenBuffer OpenCurrentScreenBuffer()
         {
-            IntPtr Handle = ConsoleEx.GetConsoleOutputHandle();
+            Microsoft.Win32.SafeHandles.SafeFileHandle Handle = ConsoleEx.GetConsoleOutputHandle();
 
-            if (Handle == WinAPI.INVALID_HANDLE_VALUE)
+            if (Handle.IsInvalid)
                 return null;
             
             ScreenBuffer Ret = new ScreenBuffer(Handle);
@@ -104,20 +162,31 @@ namespace ConsoleLib
 
         public void Dispose(bool Disposing)
         {
-            if (FreeHandle && BufferHandle != WinAPI.INVALID_HANDLE_VALUE)
-                WinAPI.CloseHandle(BufferHandle);
-
-            BufferHandle = WinAPI.INVALID_HANDLE_VALUE;
-
+            if (FreeHandle && !BufferHandle.IsClosed)
+                BufferHandle.Close();
         }
         
         #endregion
 
         #region Properties
 
-        public IntPtr Handle
+        internal Microsoft.Win32.SafeHandles.SafeFileHandle Handle
         {
             get { return BufferHandle; }
+        }
+
+        // A stream for this screen buffer
+        public System.IO.TextWriter Stream
+        {
+            get
+            {
+                if (OutputStream == null)
+                {
+                    OutputStream = new System.IO.StreamWriter(new System.IO.FileStream(BufferHandle, System.IO.FileAccess.Write));
+                }
+
+                return OutputStream;
+            }
         }
 
         public ConsoleExOutputMode Mode
@@ -135,7 +204,7 @@ namespace ConsoleLib
             {
                 if (!WinAPI.SetConsoleOutputMode(BufferHandle, value))
                 {
-                    throw new ConsoleExException("ConsoleEx: Unable to get input mode.");
+                    throw new ConsoleExException("ConsoleEx: Unable to set input mode.");
                 }
             }
         }
@@ -393,7 +462,7 @@ namespace ConsoleLib
             }
         }
         
-        WinAPI.ConsoleScreenBufferInfoEx ScreenBufferInfo
+        internal WinAPI.ConsoleScreenBufferInfoEx ScreenBufferInfo
         {
             get
             {
@@ -417,7 +486,7 @@ namespace ConsoleLib
             }
         }
 
-        CharacterAttribute Attribute
+        internal CharacterAttribute Attribute
         {
             get
             {
@@ -434,10 +503,95 @@ namespace ConsoleLib
                 }
             }
         }
+
+        public bool ProcessedOutput
+        {
+            get
+            {
+                return (Mode & ConsoleExOutputMode.ProcessedOutput) == ConsoleExOutputMode.ProcessedOutput;
+            }
+
+            set
+            {
+                if (value)
+                    Mode |= ConsoleExOutputMode.ProcessedOutput;
+                else
+                    Mode &= ~ConsoleExOutputMode.ProcessedOutput;
+            }
+        }
+        
+        public bool WrapAtEOL
+        {
+            get
+            {
+                return (Mode & ConsoleExOutputMode.WrapAtEOL) == ConsoleExOutputMode.WrapAtEOL;
+            }
+
+            set
+            {
+                if (value)
+                    Mode |= ConsoleExOutputMode.WrapAtEOL;
+                else
+                    Mode &= ~ConsoleExOutputMode.WrapAtEOL;
+            }
+        }
+
+        public bool VirtualTerminal
+        {
+            get
+            {
+                return (Mode & ConsoleExOutputMode.VirutalTerminalProcessing) == ConsoleExOutputMode.VirutalTerminalProcessing;
+            }
+
+            set
+            {
+                if (value)
+                    Mode |= ConsoleExOutputMode.VirutalTerminalProcessing;
+                else
+                    Mode &= ~ConsoleExOutputMode.VirutalTerminalProcessing;
+            }
+        }
+
+        public bool NewLineAutoReturn
+        {
+            get
+            {
+                return (Mode & ConsoleExOutputMode.DisableNewLineAutoReturn) != ConsoleExOutputMode.DisableNewLineAutoReturn;
+            }
+
+            set
+            {
+                if (value)
+                    Mode &= ~ConsoleExOutputMode.DisableNewLineAutoReturn;
+                else
+                    Mode |= ConsoleExOutputMode.DisableNewLineAutoReturn;
+            }
+        }
+
+        public bool LVBGridWoldwide
+        {
+            get
+            {
+                return (Mode & ConsoleExOutputMode.LVBGridWoldwide) == ConsoleExOutputMode.LVBGridWoldwide;
+            }
+
+            set
+            {
+                if (value)
+                    Mode |= ConsoleExOutputMode.LVBGridWoldwide;
+                else
+                    Mode &= ~ConsoleExOutputMode.LVBGridWoldwide;
+            }
+        }
         
         #endregion
 
         #region Output Functions
+
+        public void WriteLine()
+        {
+            Write("\r\n");
+        }
 
         public void Write(char Data)
         {
@@ -448,6 +602,12 @@ namespace ConsoleLib
             }
         }
 
+        public void WriteLine(char Data)
+        {
+            Write(Data);
+            WriteLine();
+        }
+
         public void Write(char[] Data)
         {
             uint Len;
@@ -455,6 +615,12 @@ namespace ConsoleLib
             {
                 throw new ConsoleExException("ConsoleEx: Unable to write to screen buffer.");
             }
+        }
+
+        public void WriteLine(char[] Data)
+        {
+            Write(Data);
+            WriteLine();
         }
 
         public void Write(string Data)
@@ -469,9 +635,11 @@ namespace ConsoleLib
         public void WriteLine(string Data)
         {
             Write(Data);
-            Write("\r\n");
+            WriteLine();
         }
 
+        //---------------------------------------------------
+        
         public int WritePos(char Buffer, int PosLeft, int PosTop)
         {
             char[] SmallBuffer = new char[1];
@@ -482,11 +650,6 @@ namespace ConsoleLib
         {
             CharacterAttribute[] SmallBuffer = new CharacterAttribute[1];
             return WritePos(SmallBuffer, PosLeft, PosTop);
-        }
-
-        public int WriteBlock(CharInfo[,] Buffer, int PosLeft, int PosTop)
-        {
-            return WriteBlock(Buffer, 0, 0, PosLeft, PosTop, PosLeft + Buffer.GetLength(1) - 1, PosTop + Buffer.GetLength(0) - 1);
         }
 
         public int WritePos(char[] Buffer, int PosLeft, int PosTop)
@@ -518,6 +681,11 @@ namespace ConsoleLib
         }
 
 
+        public int WriteBlock(CharInfo[,] Buffer, int PosLeft, int PosTop)
+        {
+            return WriteBlock(Buffer, 0, 0, PosLeft, PosTop, PosLeft + Buffer.GetLength(1) - 1, PosTop + Buffer.GetLength(0) - 1);
+        }
+
         public int WriteBlock(CharInfo[,] Buffer, int BufferOffsetX, int BufferOffsetY, int PosLeft, int PosTop, int PosRight, int PosBottom)
         {
             WinAPI.Coord BufferSize = new WinAPI.Coord(Buffer.GetLength(1), Buffer.GetLength(0));
@@ -537,20 +705,20 @@ namespace ConsoleLib
 
         #region Scrolling
 
-        // Scrolls the whole buffer up a given number of lines, filling with blanks in the default colors
+        // Scrolls the whole buffer up a given number of lines, filling with blanks in the current colors
         public void Scroll(int LineCount = 1)
         {
-            MoveBlock(0, LineCount, BufferWidth, BufferHeight, 0, 0, ' ', Attribute.Foreground, Attribute.Background);
+            MoveBufferArea(0, LineCount, BufferWidth, BufferHeight - LineCount, 0, 0, ' ', Attribute.Foreground, Attribute.Background);
         }
 
-        public void MoveBlock(int DataLeft, int DataTop, int DataRight, int DataBottom, int DestX, int DestY, char FillChar = ' ')
+        public void MoveBufferArea(int DataLeft, int DataTop, int DataWidth, int DataHeight, int DestX, int DestY, char FillChar = ' ')
         {
-            MoveBlock(DataLeft, DataTop, DataRight, DataBottom, DestX, DestY, FillChar, Attribute.Foreground, Attribute.Background);
+            MoveBufferArea(DataLeft, DataTop, DataWidth, DataHeight, DestX, DestY, FillChar, Attribute.Foreground, Attribute.Background);
         }
 
-        public void MoveBlock(int DataLeft, int DataTop, int DataRight, int DataBottom, int DestX, int DestY, char FillChar, ConsoleColor FillForground, ConsoleColor FillBackground)
+        public void MoveBufferArea(int DataLeft, int DataTop, int DataWidth, int DataHeight, int DestX, int DestY, char FillChar, ConsoleColor FillForground, ConsoleColor FillBackground)
         {
-            WinAPI.SmallRect Source = new WinAPI.SmallRect(DataLeft, DataTop, DataRight, DataBottom);
+            WinAPI.SmallRect Source = new WinAPI.SmallRect(DataLeft, DataTop, DataLeft + DataWidth - 1, DataTop + DataHeight - 1);
             WinAPI.Coord Destination = new WinAPI.Coord(DestX, DestY);
 
             CharInfo Fill = new CharInfo(FillChar, new CharacterAttribute(FillForground, FillBackground));
@@ -561,7 +729,7 @@ namespace ConsoleLib
             }
         }
 
-        public void MoveBlock(System.Drawing.Rectangle DataPos, System.Drawing.Rectangle ClippingPos, System.Drawing.Point DestinationLoc, char FillChar, ConsoleColor FillForground, ConsoleColor FillBackground)
+        public void MoveBufferArea(System.Drawing.Rectangle DataPos, System.Drawing.Rectangle ClippingPos, System.Drawing.Point DestinationLoc, char FillChar, ConsoleColor FillForground, ConsoleColor FillBackground)
         {
             WinAPI.SmallRect Source = new WinAPI.SmallRect(DataPos.Left, DataPos.Top, DataPos.Right, DataPos.Bottom);
             WinAPI.SmallRect Clipping = new WinAPI.SmallRect(ClippingPos.Left, ClippingPos.Top, ClippingPos.Right, ClippingPos.Bottom);
@@ -579,24 +747,19 @@ namespace ConsoleLib
 
         #region Reading Functions
 
-        public int Read(char Buffer, int PosLeft, int PosTop)
+        public int ReadPos(char Buffer, int PosLeft, int PosTop)
         {
             char[] SmallBuffer = new char[1];
-            return Read(SmallBuffer, PosLeft, PosTop);
-        }
-        
-        public int Read(CharacterAttribute Buffer, int PosLeft, int PosTop)
-        {
-            CharacterAttribute[] SmallBuffer = new CharacterAttribute[1];
-            return Read(SmallBuffer, PosLeft, PosTop);
+            return ReadPos(SmallBuffer, PosLeft, PosTop);
         }
 
-        public int ReadBlock(CharInfo[,] Buffer, int PosLeft, int PosTop)
+        public int ReadPos(CharacterAttribute Buffer, int PosLeft, int PosTop)
         {
-            return ReadBlock(Buffer, 0, 0, PosLeft, PosTop, PosLeft + Buffer.GetLength(1) - 1, PosTop + Buffer.GetLength(0) - 1);
+            CharacterAttribute[] SmallBuffer = new CharacterAttribute[1];
+            return ReadPos(SmallBuffer, PosLeft, PosTop);
         }
-        
-        public int Read(char[] Buffer, int PosLeft, int PosTop)
+
+        public int ReadPos(char[] Buffer, int PosLeft, int PosTop)
         {
             WinAPI.Coord BufferSize = new WinAPI.Coord(Buffer.GetLength(1), Buffer.GetLength(0));
             WinAPI.Coord BufferPos = new WinAPI.Coord(PosLeft, PosTop);
@@ -610,7 +773,7 @@ namespace ConsoleLib
             return (int)ReadCount;
         }
 
-        public int Read(CharacterAttribute[] Buffer, int PosLeft, int PosTop)
+        public int ReadPos(CharacterAttribute[] Buffer, int PosLeft, int PosTop)
         {
             WinAPI.Coord BufferSize = new WinAPI.Coord(Buffer.GetLength(1), Buffer.GetLength(0));
             WinAPI.Coord BufferPos = new WinAPI.Coord(PosLeft, PosTop);
@@ -623,8 +786,13 @@ namespace ConsoleLib
 
             return (int)ReadCount;
         }
-               
-        public int ReadBlock(CharInfo[,] Buffer, int BufferOffsetX, int BufferOffsetY, int PosLeft, int PosTop, int PosRight, int PosBottom)
+
+        public int ReadPos(CharInfo[,] Buffer, int PosLeft, int PosTop)
+        {
+            return ReadPos(Buffer, 0, 0, PosLeft, PosTop, PosLeft + Buffer.GetLength(1) - 1, PosTop + Buffer.GetLength(0) - 1);
+        }
+
+        public int ReadPos(CharInfo[,] Buffer, int BufferOffsetX, int BufferOffsetY, int PosLeft, int PosTop, int PosRight, int PosBottom)
         {
             WinAPI.Coord BufferSize = new WinAPI.Coord(Buffer.GetLength(1), Buffer.GetLength(0));
             WinAPI.Coord BufferPos = new WinAPI.Coord(BufferOffsetX, BufferOffsetY);
@@ -640,5 +808,78 @@ namespace ConsoleLib
         }
 
         #endregion
+
+        #region Utitily Functions
+
+        public void Clear()
+        {
+            WinAPI.Coord Pos = new WinAPI.Coord(0, 0);
+
+            uint FillTotal = (uint)(BufferHeight * BufferWidth);
+            uint FillOutput = 0;
+            WinAPI.FillConsoleOutputCharacter(BufferHandle, ' ', FillTotal, Pos, out FillOutput);
+            WinAPI.FillConsoleOutputAttribute(BufferHandle, Attribute.Value, FillTotal, Pos, out FillOutput);
+        }
+
+        public void SetBufferSize(int width, int height)
+        {
+            WinAPI.Coord Size = new WinAPI.Coord(width, height);
+
+            if (!WinAPI.SetConsoleScreenBufferSize(BufferHandle, Size))
+            {
+                throw new ConsoleExException("ConsoleEx: Unable to set Buffer Size.");
+            }
+        }
+
+        public void SetCursorPosition(int left, int top)
+        {
+            WinAPI.Coord Pos = new WinAPI.Coord(left, top);
+
+            if (!WinAPI.SetConsoleCursorPosition(BufferHandle, Pos))
+            {
+                throw new ConsoleExException("ConsoleEx: Unable to set cursor position.");
+            }
+        }
+
+        public void SetWindowPosition(int left, int top)
+        {
+            WinAPI.SmallRect NewWindow = ScreenBufferInfo.Window;
+
+            int OldWidth = NewWindow.Width;
+            int OldHeight = NewWindow.Height;
+
+            NewWindow.Left = (short)left;
+            NewWindow.Top = (short)top;
+
+            NewWindow.Width = OldWidth;
+            NewWindow.Height = OldHeight;
+
+            if (!WinAPI.SetConsoleWindowInfo(BufferHandle, true, ref NewWindow))
+            {
+                throw new ConsoleExException("ConsoleEx: Unable to set Console Window Info.");
+            }
+        }
+
+        public void SetWindowSize(int width, int height)
+        {
+            WinAPI.SmallRect NewWindow = ScreenBufferInfo.Window;
+
+            NewWindow.Height = height;
+            NewWindow.Width = width;
+
+            if (!WinAPI.SetConsoleWindowInfo(BufferHandle, true, ref NewWindow))
+            {
+                throw new ConsoleExException("ConsoleEx: Unable to set Console Window Info.");
+            }
+
+        }
+
+        public void ResetColor()
+        {
+            Attribute = OriginalAttributes;
+        }
+
+        #endregion
+
     }
 }

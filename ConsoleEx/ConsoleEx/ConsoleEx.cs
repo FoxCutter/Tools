@@ -4,11 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Microsoft.Win32.SafeHandles;
 
 namespace ConsoleLib
 {
     public static class ConsoleEx
     {
+        /* 
+        TODO: From System.Console
+        
+        public static Stream OpenStandardError();
+        public static Stream OpenStandardInput();
+        public static Stream OpenStandardOutput();
+        
+        public static Stream OpenStandardError(int bufferSize);
+        public static Stream OpenStandardInput(int bufferSize);
+        public static Stream OpenStandardOutput(int bufferSize);        
+        
+        */
+
         #region Event objcets
 
         public class ConsoleControlEventHandlerArgs : EventArgs
@@ -27,11 +41,18 @@ namespace ConsoleLib
 
         #endregion
 
+        // Direct access to the Input Buffer ignoring redirection
         static public InputBuffer InputBuffer { get; private set; }
+
+        // Direct access to the Output Buffer ignoring redirection
         static public ScreenBuffer ScreenBuffer { get; private set; }
 
+        static System.IO.TextReader StdInputStream = null;
+        static System.IO.TextWriter StdErrorStream = null;
+        static System.IO.TextWriter StdOutputStream = null;
 
-        static WinAPI.CtrlHandlerRoutine CtrlHandlerRoutineCallback = null;
+
+        static WinAPI.CtrlHandlerRoutine CancelKeyPress = null;
         
         static ConsoleEx()
         {
@@ -44,12 +65,12 @@ namespace ConsoleLib
 
         static void SetupConsole()
         {
-            if (StdOutputRedirected)
+            if (IsOutputRedirected)
                 ScreenBuffer = ScreenBuffer.OpenCurrentScreenBuffer();
             else
                 ScreenBuffer = new ScreenBuffer(StdOutput);
 
-            if (StdInputRedirected)
+            if (IsInputRedirected)
                 InputBuffer = InputBuffer.OpenCurrentInputBuffer();
             else
                 InputBuffer = new InputBuffer(StdInput);
@@ -109,7 +130,7 @@ namespace ConsoleLib
         }
 
 
-        static public ScreenBuffer SwapBuffers(ScreenBuffer NewBuffer)
+        static public ScreenBuffer SwapBuffers(ScreenBuffer NewBuffer, bool SetStdOutput = true)
         {
             if (!WinAPI.SetConsoleActiveScreenBuffer(NewBuffer.Handle))
             {
@@ -118,6 +139,10 @@ namespace ConsoleLib
 
             ScreenBuffer OldBuffer = ScreenBuffer;
             ScreenBuffer = NewBuffer;
+
+            if (SetStdOutput)
+                StdOutput = NewBuffer.Handle;
+
             return OldBuffer;
         }
 
@@ -248,10 +273,10 @@ namespace ConsoleLib
 
         static void AttachCtrlHandler()
         {
-            if (CtrlHandlerRoutineCallback == null)
-                CtrlHandlerRoutineCallback = new WinAPI.CtrlHandlerRoutine(CtrlHandlerFunction);
+            if (CancelKeyPress == null)
+                CancelKeyPress = new WinAPI.CtrlHandlerRoutine(CtrlHandlerFunction);
 
-            if (!WinAPI.SetConsoleCtrlHandler(CtrlHandlerRoutineCallback, true))
+            if (!WinAPI.SetConsoleCtrlHandler(CancelKeyPress, true))
             {
                 throw new ConsoleExException("ConsoleEx: Unable to set Ctrl handler.");
             }
@@ -259,10 +284,10 @@ namespace ConsoleLib
 
         static void DetachCtrlHandler()
         {
-            if (CtrlHandlerRoutineCallback == null)
+            if (CancelKeyPress == null)
                 return;
 
-            if (!WinAPI.SetConsoleCtrlHandler(CtrlHandlerRoutineCallback, false))
+            if (!WinAPI.SetConsoleCtrlHandler(CancelKeyPress, false))
             {
                 throw new ConsoleExException("ConsoleEx: Unable to remove Ctrl handler.");
             }
@@ -411,44 +436,123 @@ namespace ConsoleLib
                 return Info;
             }
         }
-      
-        public static IntPtr StdInput
+
+        static public Microsoft.Win32.SafeHandles.SafeFileHandle StdInput
         {
-            get { return WinAPI.GetStdHandle(WinAPI.StdHandleType.STD_INPUT_HANDLE); }
+            get { return GetStdHandle(WinAPI.StdHandleType.STD_INPUT_HANDLE); }
             set
             {
                 if (!WinAPI.SetStdHandle(WinAPI.StdHandleType.STD_INPUT_HANDLE, value))
                 {
                     throw new ConsoleExException("ConsoleEx: Unable to set standard input.");
                 }
+
+                StdInputStream = null;
             }
         }
-        
-        public static IntPtr StdOutput
+
+        static public Microsoft.Win32.SafeHandles.SafeFileHandle StdOutput
         {
-            get { return WinAPI.GetStdHandle(WinAPI.StdHandleType.STD_OUTPUT_HANDLE); }
+            get { return GetStdHandle(WinAPI.StdHandleType.STD_OUTPUT_HANDLE); }
             set
             {
                 if (!WinAPI.SetStdHandle(WinAPI.StdHandleType.STD_OUTPUT_HANDLE, value))
                 {
                     throw new ConsoleExException("ConsoleEx: Unable to set standard output.");
                 }
+
+                StdOutputStream = null;
             }
         }
-                
-        public static IntPtr StdError
+
+        static public Microsoft.Win32.SafeHandles.SafeFileHandle StdError
         {
-            get { return WinAPI.GetStdHandle(WinAPI.StdHandleType.STD_ERROR_HANDLE); }
+            get { return GetStdHandle(WinAPI.StdHandleType.STD_ERROR_HANDLE); }
             set
             {
                 if (!WinAPI.SetStdHandle(WinAPI.StdHandleType.STD_ERROR_HANDLE, value))
                 {
                     throw new ConsoleExException("ConsoleEx: Unable to set standard error.");
                 }
+
+                StdErrorStream = null;
             }
         }
 
-        public static bool StdInputRedirected
+        // Stream for the StdInput handle
+        public static TextReader In 
+        {
+            get
+            {
+                if (StdInputStream == null)
+                {
+                    //StdInputStream = new System.IO.StreamReader(new System.IO.(StdInput, System.IO.FileAccess.Read));
+                }
+
+                return StdInputStream;
+            }
+        }
+
+        // Stream for the StdError handle
+        public static TextWriter Error 
+        {
+            get
+            {
+                if (StdErrorStream == null)
+                {
+                    StdErrorStream = new System.IO.StreamWriter(new System.IO.FileStream(StdError, System.IO.FileAccess.Write));
+                }
+
+                return StdErrorStream;
+            }
+        }
+
+        // Stream for the StdOutput handle
+        public static TextWriter Out 
+        {
+            get 
+            {
+                if (StdOutputStream == null)
+                {
+                    StdOutputStream = new System.IO.StreamWriter(new System.IO.FileStream(StdOutput, System.IO.FileAccess.Write));
+                }
+
+                return StdOutputStream;
+            }
+        }
+
+        public static void SetIn(TextReader newIn)
+        {
+            StdInputStream = newIn;
+        }
+        
+        public static void SetError(TextWriter newError)
+        {
+            StdErrorStream = newError;
+        }
+
+        public static void SetOut(TextWriter newOut)
+        {
+            StdOutputStream = newOut;
+        }
+
+
+        internal static IntPtr RawStdInput
+        {
+            get { return WinAPI.GetStdHandle(WinAPI.StdHandleType.STD_INPUT_HANDLE); }
+        }
+
+        internal static IntPtr RawStdOutput
+        {
+            get { return WinAPI.GetStdHandle(WinAPI.StdHandleType.STD_OUTPUT_HANDLE); }
+        }
+
+        internal static IntPtr RawStdError
+        {
+            get { return WinAPI.GetStdHandle(WinAPI.StdHandleType.STD_ERROR_HANDLE); }
+        }
+        
+        public static bool IsInputRedirected
         {
             get
             {
@@ -459,7 +563,7 @@ namespace ConsoleLib
             }
         }
 
-        public static bool StdOutputRedirected
+        public static bool IsOutputRedirected
         {
             get
             {
@@ -470,7 +574,7 @@ namespace ConsoleLib
             }
         }
         
-        public static bool StdErrorRedirected
+        public static bool IsErrorRedirected
         {
             get
             {
@@ -481,27 +585,53 @@ namespace ConsoleLib
             }
         }
 
-        internal static IntPtr GetConsoleOutputHandle()
+        public static bool TreatControlCAsInput
+        {
+            get
+            {
+                return !InputBuffer.ProcessedInput;
+            }
+
+            set
+            {
+                InputBuffer.ProcessedInput = !value;
+            }
+        }
+        #endregion
+
+        internal static Microsoft.Win32.SafeHandles.SafeFileHandle GetStdHandle(WinAPI.StdHandleType StdHandle)
+        {
+            return new SafeFileHandle(WinAPI.GetStdHandle(StdHandle), false);
+        }
+
+        internal static Microsoft.Win32.SafeHandles.SafeFileHandle GetConsoleOutputHandle()
         {
             // Open up the handle to the buffer attached to the console, not what is attached to the handle.
-            IntPtr Handle = WinAPI.CreateFile("CONOUT$", WinAPI.DesiredAccess.GENERIC_READ | WinAPI.DesiredAccess.GENERIC_WRITE,
+            Microsoft.Win32.SafeHandles.SafeFileHandle Handle = WinAPI.CreateFile("CONOUT$", WinAPI.DesiredAccess.GENERIC_READ | WinAPI.DesiredAccess.GENERIC_WRITE,
                                                          WinAPI.ShareMode.FILE_SHARE_READ | WinAPI.ShareMode.FILE_SHARE_WRITE,
                                                          IntPtr.Zero, WinAPI.CreationDispositionType.OPEN_EXISTING, 0, IntPtr.Zero);
 
             return Handle;
         }
 
-        internal static IntPtr GetConsoleInputHandle()
+        internal static Microsoft.Win32.SafeHandles.SafeFileHandle GetConsoleInputHandle()
         {
             // Open up the handle to the buffer attached to the console, not what is attached to the handle.
-            IntPtr Handle = WinAPI.CreateFile("CONIN$", WinAPI.DesiredAccess.GENERIC_READ | WinAPI.DesiredAccess.GENERIC_WRITE,
+            Microsoft.Win32.SafeHandles.SafeFileHandle Handle = WinAPI.CreateFile("CONIN$", WinAPI.DesiredAccess.GENERIC_READ | WinAPI.DesiredAccess.GENERIC_WRITE,
                                                         WinAPI.ShareMode.FILE_SHARE_READ | WinAPI.ShareMode.FILE_SHARE_WRITE,
                                                         IntPtr.Zero, WinAPI.CreationDispositionType.OPEN_EXISTING, 0, IntPtr.Zero);
 
             return Handle;
         }
 
-        
-        #endregion
+        public static void Beep()
+        {
+            Beep(800, 200);
+        }
+
+        public static void Beep(int frequency, int duration)
+        {
+            WinAPI.Beep((uint)frequency, (uint)duration);
+        }
     }
 }
