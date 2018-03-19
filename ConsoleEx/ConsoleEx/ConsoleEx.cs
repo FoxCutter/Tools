@@ -10,19 +10,6 @@ namespace ConsoleLib
 {
     public static class ConsoleEx
     {
-        /* 
-        TODO: From System.Console
-        
-        public static Stream OpenStandardError();
-        public static Stream OpenStandardInput();
-        public static Stream OpenStandardOutput();
-        
-        public static Stream OpenStandardError(int bufferSize);
-        public static Stream OpenStandardInput(int bufferSize);
-        public static Stream OpenStandardOutput(int bufferSize);        
-        
-        */
-
         #region Event objcets
 
         public class ConsoleControlEventHandlerArgs : EventArgs
@@ -479,6 +466,67 @@ namespace ConsoleLib
             }
         }
 
+        public static Stream OpenStandardInput()
+        {
+            return OpenStandardInput(1024);
+        }
+
+        public static Stream OpenStandardError()
+        {
+            return OpenStandardError(1024);
+        }
+
+        public static Stream OpenStandardOutput()
+        {
+            return OpenStandardOutput(1024);
+        }
+
+        public static Stream OpenStandardInput(int bufferSize)
+        {
+            WinAPI.FileTypes Type = WinAPI.GetFileType(StdInput);
+
+            System.IO.Stream Stream;
+
+            // If it's not a charater stream, use the built in file stream
+            if (Type == WinAPI.FileTypes.Character)
+                Stream = new WinAPI.ConsoleStream(StdInput, FileAccess.Read);
+            else
+                Stream = new System.IO.FileStream(StdInput, FileAccess.Read, bufferSize);
+
+            return Stream;
+        }
+
+        public static Stream OpenStandardError(int bufferSize)
+        {
+            WinAPI.FileTypes Type = WinAPI.GetFileType(StdError);
+
+            System.IO.Stream Stream;
+
+            // If it's not a charater stream, use the built in file stream
+            if (Type == WinAPI.FileTypes.Character)
+                Stream = new WinAPI.ConsoleStream(StdError, FileAccess.Write);
+            else
+                Stream = new System.IO.FileStream(StdError, FileAccess.Write, bufferSize);
+
+            return Stream;
+        }
+
+        public static Stream OpenStandardOutput(int bufferSize)
+        {
+            WinAPI.FileTypes Type = WinAPI.GetFileType(StdOutput);
+
+            System.IO.Stream Stream;
+
+            // If it's not a charater stream, use the built in file stream
+            if (Type == WinAPI.FileTypes.Character)
+                Stream = new WinAPI.ConsoleStream(StdOutput, FileAccess.Write);
+            else
+                Stream = new System.IO.FileStream(StdOutput, FileAccess.Write, bufferSize);
+
+            return Stream;
+        }
+
+
         // Stream for the StdInput handle
         public static TextReader In 
         {
@@ -486,7 +534,8 @@ namespace ConsoleLib
             {
                 if (StdInputStream == null)
                 {
-                    //StdInputStream = new System.IO.StreamReader(new System.IO.(StdInput, System.IO.FileAccess.Read));
+                    System.IO.StreamReader Stream = new System.IO.StreamReader(OpenStandardInput(), InputEncoding);
+                    StdInputStream = Stream;
                 }
 
                 return StdInputStream;
@@ -500,7 +549,9 @@ namespace ConsoleLib
             {
                 if (StdErrorStream == null)
                 {
-                    StdErrorStream = new System.IO.StreamWriter(new System.IO.FileStream(StdError, System.IO.FileAccess.Write));
+                    System.IO.StreamWriter Stream = new System.IO.StreamWriter(OpenStandardError(), OutputEncoding);
+                    Stream.AutoFlush = true;
+                    StdErrorStream = Stream;
                 }
 
                 return StdErrorStream;
@@ -514,7 +565,9 @@ namespace ConsoleLib
             {
                 if (StdOutputStream == null)
                 {
-                    StdOutputStream = new System.IO.StreamWriter(new System.IO.FileStream(StdOutput, System.IO.FileAccess.Write));
+                    System.IO.StreamWriter Stream = new System.IO.StreamWriter(OpenStandardOutput(), OutputEncoding);
+                    Stream.AutoFlush = true;
+                    StdOutputStream = Stream;
                 }
 
                 return StdOutputStream;

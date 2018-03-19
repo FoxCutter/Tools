@@ -12,6 +12,114 @@ namespace ConsoleLib
 {
     public class WinAPI
     {
+        #region Console Stream
+
+        internal class ConsoleStream : System.IO.Stream
+        {
+            bool Readable;
+            bool Writeable;
+            SafeFileHandle BufferHandle;
+
+            public ConsoleStream(SafeFileHandle Handle, System.IO.FileAccess Access)
+            {
+                BufferHandle = Handle;
+                Readable = (Access & System.IO.FileAccess.Read) == System.IO.FileAccess.Read;
+                Writeable = (Access & System.IO.FileAccess.Write) == System.IO.FileAccess.Write;
+            }
+
+            public override bool CanRead
+            {
+                get { return Readable; }
+            }
+
+            public override bool CanSeek
+            {
+                get { return false; }
+            }
+
+            public override bool CanWrite
+            {
+                get { return Writeable; }
+            }
+
+            public override void Flush()
+            {
+                if (Readable)
+                {
+                    if (!WinAPI.FlushConsoleInputBuffer(BufferHandle))
+                    {
+                        throw new ConsoleExException("ConsoleEx: Unable to flush input buffer.");
+                    }
+                }
+            }
+
+            public override long Length
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public override long Position
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                if (!Readable)
+                    return 0;
+                
+                byte[] Data = new byte[count];
+                uint DataRead;
+
+                //if (!WinAPI.ReadConsole(BufferHandle, Data, (uint)count / sizeof(char), out DataRead, IntPtr.Zero))
+                if (!WinAPI.ReadFile(BufferHandle, Data, (uint)count, out DataRead, IntPtr.Zero))
+                {
+                    throw new ConsoleExException("ConsoleEx: Unable to read from console buffer.");
+                }
+
+                Data.CopyTo(buffer, offset);
+
+                //return (int)DataRead * sizeof(char);
+                return (int)DataRead;
+            }
+
+            public override long Seek(long offset, System.IO.SeekOrigin origin)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void SetLength(long value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                if (!Writeable)
+                    return;
+
+                byte[] Data = new byte[count];
+                Array.Copy(buffer, offset, Data, 0, count);
+
+                uint DataWritten;
+
+                //if (!WinAPI.WriteConsole(BufferHandle, Data, (uint)count / 2, out DataWritten, IntPtr.Zero))
+                if (!WinAPI.WriteFile(BufferHandle, Data, (uint)count, out DataWritten, IntPtr.Zero))
+                {
+                    throw new ConsoleExException("ConsoleEx: Unable to write to console.");
+                }
+            }
+        }
+
+        #endregion
+
         #region FileAPIs
         public enum CreationDispositionType : uint
         {
@@ -34,6 +142,12 @@ namespace ConsoleLib
         public static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFile(string Filename, DesiredAccess dwDesiredAccess, ShareMode dwShareMode, IntPtr lpSecurityAttributes, CreationDispositionType CreationDisposition, uint FlagsAndAttributes, IntPtr TemplateFile);
 
         [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool ReadFile(SafeFileHandle hHandle, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] Buffer, uint NumberOfBytesToRead, out uint NumberOfBytesRead, IntPtr Reserved);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool WriteFile(SafeFileHandle hHandle, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] Buffer, uint NumberOfBytesToWrite, out uint NumberOfBytesWritten, IntPtr Reserved);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
         static public extern FileTypes GetFileType(Microsoft.Win32.SafeHandles.SafeFileHandle hObject);
 
         [DllImport("user32.dll")]
@@ -41,6 +155,8 @@ namespace ConsoleLib
 
         [DllImport("kernel32.dll")]
         static public extern bool Beep(uint Freq, uint Duration);
+
+
 
         #endregion
 
@@ -586,6 +702,13 @@ namespace ConsoleLib
 
         [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static public extern bool ReadConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, StringBuilder Buffer, uint NumberofCharsToRead, out uint NumberOfCharsRead, IntPtr Reserved);
+
+
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        static public extern bool ReadConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] Buffer, uint NumberofCharsToRead, out uint NumberOfCharsRead, IntPtr Reserved);
+
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        static public extern bool WriteConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] Buffer, uint NumberOfCharsToWrite, out uint NumberOfCharsWritten, IntPtr Reserved);
 
         #endregion
 

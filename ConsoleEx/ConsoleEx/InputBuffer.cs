@@ -76,7 +76,7 @@ namespace ConsoleLib
             {
                 if (InputStream == null)
                 {
-                    //InputStream = new System.IO.StreamReader(new System.IO.(BufferHandle, System.IO.FileAccess.Read));
+                    InputStream = new System.IO.StreamReader(new WinAPI.ConsoleStream(BufferHandle, FileAccess.Read), ConsoleEx.InputEncoding);
                 }
 
                 return InputStream;

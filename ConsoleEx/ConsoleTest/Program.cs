@@ -14,7 +14,7 @@ namespace ConsoleTest
             ConsoleEx.ScreenBuffer.WriteLine("Lorem ipsum dolor sit amet, nec fusce potenti eget egestas, mauris commodo felis vestibulum vestibulum. Urna consequat sed faucibus duis, ac non tristique tortor, eu tristique lacinia vehicula diam, consectetuer quisque felis sollicitudin. Non non diam duis, consectetuer a tortor est nisl. Accumsan pellentesque dictum nulla eget, elit non commodo turpis, libero in viverra nibh amet.");
             ConsoleEx.InputBuffer.Flush();
             ScreenBuffer NewBuffer = new ScreenBuffer(ConsoleEx.ScreenBuffer, true);
-            var old = ConsoleEx.SwapBuffers(NewBuffer);
+            //var old = ConsoleEx.SwapBuffers(NewBuffer);
             //ConsoleEx.StdOutput = NewBuffer.Handle;
             Console.Write("123456789...");
             
@@ -29,12 +29,26 @@ namespace ConsoleTest
             //ConsoleEx.InputBuffer.Mode &= ~ConsoleExInputMode.EchoInput;
             //ConsoleEx.InputBuffer.Mode &= ~ConsoleExInputMode.LineInput;
             //ConsoleEx.InputBuffer.Mode &= ~ConsoleExInputMode.ProcessedInput;
-            
+
+            //ConsoleEx.OutputEncoding = System.Text.Encoding.UTF8;
+            //Console.OutputEncoding = System.Text.Encoding.UTF8;
+            //Console.InputEncoding = System.Text.Encoding.UTF8;
+
+            //ConsoleEx.OutputEncoding = System.Text.Encoding.Unicode;
+            //Console.OutputEncoding = System.Text.Encoding.Unicode;
+
+            //var i = ConsoleEx.In.ReadLine();
+            //var i2 = ConsoleEx.InputBuffer.Stream.ReadLine();
+            Console.Out.WriteLine("Testing 1®");
+            ConsoleEx.Out.WriteLine("Testing 2®");
+            ConsoleEx.ScreenBuffer.Stream.WriteLine("Testing 3®");
+            //var i = Console.In.ReadLine();
+
             var k = ConsoleEx.InputBuffer.ReadLine();
 
             //var t = ConsoleEx.Window;
 
-            ConsoleEx.SwapBuffers(old);
+            //ConsoleEx.SwapBuffers(old);
 
 
         }

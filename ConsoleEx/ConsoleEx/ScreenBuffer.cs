@@ -182,7 +182,10 @@ namespace ConsoleLib
             {
                 if (OutputStream == null)
                 {
-                    OutputStream = new System.IO.StreamWriter(new System.IO.FileStream(BufferHandle, System.IO.FileAccess.Write));
+                    System.IO.StreamWriter Stream = new System.IO.StreamWriter(new WinAPI.ConsoleStream(BufferHandle, System.IO.FileAccess.Write), ConsoleEx.OutputEncoding);
+                    Stream.AutoFlush = true;
+                    
+                    OutputStream = Stream;
                 }
 
                 return OutputStream;
