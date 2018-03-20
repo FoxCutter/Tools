@@ -121,6 +121,7 @@ namespace ConsoleLib
         #endregion
 
         #region FileAPIs
+
         public enum CreationDispositionType : uint
         {
 		    CREATE_NEW          = 1,
@@ -161,8 +162,6 @@ namespace ConsoleLib
         #endregion
 
         #region Enums
-
-        public static readonly IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 
         [Flags]
         public enum DesiredAccess : uint
@@ -240,19 +239,6 @@ namespace ConsoleLib
             MOUSE_HWHEELED  = 0x0008,
         }
 
-        public enum InputRecordType : ushort
-        {
-            None                    = 0x0000,
-
-            KeyEvent                = 0x0001,
-            MouseEvent              = 0x0002,
-            WindowBufferSizeEvent   = 0x0004,
-            MenuEvent               = 0x0008,
-            FocusEvent              = 0x0010,
-
-            All = KeyEvent | MouseEvent | WindowBufferSizeEvent | MenuEvent | FocusEvent,
-        }
-        
         // Delegate to handle calls from SetConsoleCtrlHandler
         public delegate bool CtrlHandlerRoutine(ConsoleExCtrlEventType CtrlType);
         
@@ -341,7 +327,7 @@ namespace ConsoleLib
         [StructLayout(LayoutKind.Sequential)]
         public struct FocusEventRecord
         {
-            public bool SetFocus;
+            public uint SetFocus; // BOOLs have to be marshed as uints otherwise things get borked.
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -376,16 +362,15 @@ namespace ConsoleLib
 
         }
 
-        // I'm not sure what I'm doing wrong here, but when I use LayoutKind.Sequential it seems to get the field spacing wrong.
-        [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Unicode)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct KeyEventRecord
         {
-            [FieldOffset(0)] public bool KeyDown;
-            [FieldOffset(4)] public short RepeatCount;
-            [FieldOffset(6)] public short VirtualKeyCode;
-            [FieldOffset(8)] public short VirtualScanCode;
-            [FieldOffset(10)] public char Character;
-            [FieldOffset(12)] public CtrlKeyState ControlKeyState;
+            public uint KeyDown;    // BOOLs have to be marshed as uints otherwise things get borked.
+            public short RepeatCount;
+            public short VirtualKeyCode;
+            public short VirtualScanCode;
+            public char Character;
+            public CtrlKeyState ControlKeyState;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -658,9 +643,14 @@ namespace ConsoleLib
         [DllImport("Kernel32.dll", SetLastError = true)]
         static public extern bool WriteConsoleOutputAttribute(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] CharacterAttribute[] Attribute, uint Length, Coord WriteCoord, out uint NumberOfAttrsWriten);
 
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        static public extern bool WriteConsoleOutputAttribute(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, ref CharacterAttribute Attribute, uint Length, Coord WriteCoord, out uint NumberOfAttrsWriten);
+
         [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static public extern bool WriteConsoleOutputCharacter(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] char[] Character, uint Length, Coord WriteCoord, out uint NumberOfCharsWriten);
 
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        static public extern bool WriteConsoleOutputCharacter(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, ref char Character, uint Length, Coord WriteCoord, out uint NumberOfCharsWriten);
 
         [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static public extern bool ScrollConsoleScreenBuffer(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, ref SmallRect ScrollRectangle, IntPtr Reserved, Coord DestinationOrigin, ref CharInfo Fill);

@@ -13,6 +13,7 @@ namespace ConsoleLib
         Microsoft.Win32.SafeHandles.SafeFileHandle BufferHandle;
         bool FreeHandle;
         System.IO.TextReader InputStream = null;
+        WinAPI.KeyEventRecord SavedKey = new WinAPI.KeyEventRecord();
 
         public InputBuffer(Microsoft.Win32.SafeHandles.SafeFileHandle Handle)
         {
@@ -121,21 +122,10 @@ namespace ConsoleLib
         {
             get
             {
-                if (PendingEventCount == 0)
-                    return false;
+                if (SavedKey.RepeatCount != 0)
+                    return true;
 
-                WinAPI.InputRecord[] Events = PeekPendingEvents();
-
-                foreach (WinAPI.InputRecord Event in Events)
-                {
-                    if (Event.EventType == WinAPI.InputRecordType.KeyEvent)
-                    {
-                        if (Event.KeyEvent.KeyDown == true)
-                            return true;
-                    }
-                }
-
-                return false;
+                return IsEventPending(InputRecordType.KeyEvent);
             }
         }
 
@@ -297,10 +287,30 @@ namespace ConsoleLib
 
         public void Flush()
         {
+            SavedKey.RepeatCount = 0;
             if (!WinAPI.FlushConsoleInputBuffer(BufferHandle))
             {
                 throw new ConsoleExException("ConsoleEx: Unable to flush input buffer.");
             }
+        }
+
+        public bool IsEventPending(InputRecordType EventType)
+        {
+            if (PendingEventCount == 0)
+                return false;
+
+            WinAPI.InputRecord[] Events = PeekPendingEvents();
+
+            foreach (WinAPI.InputRecord Event in Events)
+            {
+                if ((InputRecordType)Event.EventType == EventType)
+                {
+                    if (Event.KeyEvent.KeyDown != 0)
+                        return true;
+                }
+            }
+
+            return false;
         }
         
         public WinAPI.InputRecord[] PeekPendingEvents()
@@ -359,23 +369,45 @@ namespace ConsoleLib
             return EventList;
         }
 
-        public WinAPI.InputRecord NextEvent(WinAPI.InputRecordType Filter = WinAPI.InputRecordType.All)
+        public WinAPI.InputRecord NextEvent(InputRecordType Filter = InputRecordType.All)
         {
-            while (PendingEventCount != 0)
+            while (true)
             {
                 WinAPI.InputRecord[] EventList = ReadPendingEvents(1);
                 if (EventList == null)
-                    break;
+                    continue;
 
-                if ((EventList[0].EventType & Filter) != WinAPI.InputRecordType.None)
+                if ((EventList[0].EventType & Filter) != 0)
                 {
                     return EventList[0];
                 }
             }
+        }
+
+        public WinAPI.InputRecord PeekNextEvent(bool Remove = false)
+        {
+            WinAPI.InputRecord[] EventList;
+
+            while (true)
+            {
+                if (PendingEventCount == 0)
+                    break;
+                
+                if (Remove)
+                    EventList = ReadPendingEvents(1);
+                else
+                    EventList = PeekPendingEvents(1);
+
+                if (EventList == null)
+                    break;
+
+                return EventList[0];
+            }
 
             return default(WinAPI.InputRecord);
         }
-
+        
+        
         public int WritePendingEvents(WinAPI.InputRecord[] Events)
         {
             if (Events == null || Events.Length == 0)
@@ -395,48 +427,59 @@ namespace ConsoleLib
         #region Read functions
         public ConsoleKeyInfo ReadKey(bool intercept)
         {
-            ConsoleKeyInfo Info = ReadKey();
-            if (!intercept)
-                ConsoleEx.ScreenBuffer.Write(Info.KeyChar);
-
-            return Info;
-        }
-
-        public ConsoleKeyInfo ReadKey()
-        {
-            WinAPI.InputRecord[] NextEvent = new WinAPI.InputRecord[1];
-
-            uint NumberRead;
             WinAPI.KeyEventRecord KeyEvent = new WinAPI.KeyEventRecord();
 
-            bool Done = false;
-            do
+            if (SavedKey.RepeatCount != 0)
             {
-                if (!WinAPI.ReadConsoleInput(BufferHandle, NextEvent, 1, out NumberRead))
+                KeyEvent = SavedKey;
+                SavedKey.RepeatCount--;
+            }
+            else
+            {
+                while (true)
                 {
-                    throw new ConsoleExException("ConsoleEx: Unable to read from input buffer.");
-                }
+                    KeyEvent = NextEvent(InputRecordType.KeyEvent).KeyEvent;
+                    KeyEvent.RepeatCount--;
 
-                if (NextEvent[0].EventType == WinAPI.InputRecordType.KeyEvent)
-                {
-                    if (NextEvent[0].KeyEvent.KeyDown)
-                    {
-                        KeyEvent = NextEvent[0].KeyEvent;
-                        Done = true;
-                    }
+                    if (KeyEvent.KeyDown != 0)
+                        break;
                 }
-            } while (!Done);
+            }
 
+            if (KeyEvent.RepeatCount != 0)
+                SavedKey = KeyEvent;
+
+            if (!intercept)
+                ConsoleEx.ScreenBuffer.Write(KeyEvent.Character);
+            
             bool Shift = (KeyEvent.ControlKeyState & WinAPI.CtrlKeyState.SHIFT_PRESSED) != 0;
             bool Ctrl = (KeyEvent.ControlKeyState & (WinAPI.CtrlKeyState.LEFT_CTRL_PRESSED | WinAPI.CtrlKeyState.RIGHT_CTRL_PRESSED)) != 0;
             bool Alt = (KeyEvent.ControlKeyState & (WinAPI.CtrlKeyState.LEFT_ALT_PRESSED | WinAPI.CtrlKeyState.RIGHT_ALT_PRESSED)) != 0;
 
             return new ConsoleKeyInfo(KeyEvent.Character, (ConsoleKey)KeyEvent.VirtualKeyCode, Shift, Alt, Ctrl);
         }
+
+        public ConsoleKeyInfo ReadKey()
+        {
+            ConsoleKeyInfo Info = ReadKey(false);
+
+            return Info;
+        }
+
+        public WinAPI.KeyEventRecord ReadKeyEvent()
+        {
+            return NextEvent(InputRecordType.KeyEvent).KeyEvent;
+        }
         
         public int Read()
         {
             StringBuilder Data = new StringBuilder(1);
+            
+            if(SavedKey.RepeatCount != 0)
+            {
+                SavedKey.RepeatCount--;
+                return (int)SavedKey.Character;
+            }
 
             uint DataRead;
             if (!WinAPI.ReadConsole(BufferHandle, Data, 1, out DataRead, IntPtr.Zero))
@@ -451,7 +494,7 @@ namespace ConsoleLib
         {
             StringBuilder Ret = new StringBuilder();
             StringBuilder Data = new StringBuilder(512);
-
+          
             bool Done = false;
 
             do

@@ -91,6 +91,19 @@ namespace ConsoleLib
         COMMON_LVB_UNDERSCORE       = 0x8000, // Underscore.
     }
        
+    public enum InputRecordType : ushort
+    {
+        None                    = 0x0000,
+
+        KeyEvent                = 0x0001,
+        MouseEvent              = 0x0002,
+        WindowBufferSizeEvent   = 0x0004,
+        MenuEvent               = 0x0008,
+        FocusEvent              = 0x0010,
+
+        All = KeyEvent | MouseEvent | WindowBufferSizeEvent | MenuEvent | FocusEvent,
+    }
+    
     // Making a special struct for this to simplify the converstion from the preexisting ConsoleColor enum to the
     // direct character attributes (the values for both are the same).
     [StructLayout(LayoutKind.Sequential)]

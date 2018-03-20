@@ -645,19 +645,33 @@ namespace ConsoleLib
         
         public int WritePos(char Buffer, int PosLeft, int PosTop)
         {
-            char[] SmallBuffer = new char[1];
-            return WritePos(SmallBuffer, PosLeft, PosTop);
+            WinAPI.Coord BufferPos = new WinAPI.Coord(PosLeft, PosTop);
+
+            uint WriteCount;
+            if (!WinAPI.WriteConsoleOutputCharacter(BufferHandle, ref Buffer, (uint)1, BufferPos, out WriteCount))
+            {
+                throw new ConsoleExException("ConsoleEx: Unable to write to screen buffer.");
+            }
+
+            return (int)WriteCount;
         }
 
         public int WritePos(CharacterAttribute Buffer, int PosLeft, int PosTop)
         {
-            CharacterAttribute[] SmallBuffer = new CharacterAttribute[1];
-            return WritePos(SmallBuffer, PosLeft, PosTop);
+            WinAPI.Coord BufferPos = new WinAPI.Coord(PosLeft, PosTop);
+
+            uint WriteCount;
+            if (!WinAPI.WriteConsoleOutputAttribute(BufferHandle, ref Buffer, (uint)1, BufferPos, out WriteCount))
+            {
+                throw new ConsoleExException("ConsoleEx: Unable to write to screen buffer.");
+            }
+
+            return (int)WriteCount; 
+
         }
 
         public int WritePos(char[] Buffer, int PosLeft, int PosTop)
         {
-            WinAPI.Coord BufferSize = new WinAPI.Coord(Buffer.GetLength(1), Buffer.GetLength(0));
             WinAPI.Coord BufferPos = new WinAPI.Coord(PosLeft, PosTop);
 
             uint WriteCount;
@@ -671,7 +685,6 @@ namespace ConsoleLib
 
         public int WritePos(CharacterAttribute[] Buffer, int PosLeft, int PosTop)
         {
-            WinAPI.Coord BufferSize = new WinAPI.Coord(Buffer.GetLength(1), Buffer.GetLength(0));
             WinAPI.Coord BufferPos = new WinAPI.Coord(PosLeft, PosTop);
 
             uint WriteCount;
@@ -822,6 +835,8 @@ namespace ConsoleLib
             uint FillOutput = 0;
             WinAPI.FillConsoleOutputCharacter(BufferHandle, ' ', FillTotal, Pos, out FillOutput);
             WinAPI.FillConsoleOutputAttribute(BufferHandle, Attribute.Value, FillTotal, Pos, out FillOutput);
+            SetCursorPosition(0, 0);
+            SetWindowPosition(0, 0);
         }
 
         public void SetBufferSize(int width, int height)
