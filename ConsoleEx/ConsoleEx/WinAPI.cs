@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
-
+using System.Text;
 
 namespace ConsoleLib
 {
@@ -18,9 +12,9 @@ namespace ConsoleLib
         {
             bool Readable;
             bool Writeable;
-            SafeFileHandle BufferHandle;
+            Microsoft.Win32.SafeHandles.SafeFileHandle BufferHandle;
 
-            public ConsoleStream(SafeFileHandle Handle, System.IO.FileAccess Access)
+            public ConsoleStream(Microsoft.Win32.SafeHandles.SafeFileHandle Handle, System.IO.FileAccess Access)
             {
                 BufferHandle = Handle;
                 Readable = (Access & System.IO.FileAccess.Read) == System.IO.FileAccess.Read;
@@ -143,10 +137,10 @@ namespace ConsoleLib
         public static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFile(string Filename, DesiredAccess dwDesiredAccess, ShareMode dwShareMode, IntPtr lpSecurityAttributes, CreationDispositionType CreationDisposition, uint FlagsAndAttributes, IntPtr TemplateFile);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool ReadFile(SafeFileHandle hHandle, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] Buffer, uint NumberOfBytesToRead, out uint NumberOfBytesRead, IntPtr Reserved);
+        public static extern bool ReadFile(Microsoft.Win32.SafeHandles.SafeFileHandle hHandle, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] Buffer, uint NumberOfBytesToRead, out uint NumberOfBytesRead, IntPtr Reserved);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool WriteFile(SafeFileHandle hHandle, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] Buffer, uint NumberOfBytesToWrite, out uint NumberOfBytesWritten, IntPtr Reserved);
+        public static extern bool WriteFile(Microsoft.Win32.SafeHandles.SafeFileHandle hHandle, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] Buffer, uint NumberOfBytesToWrite, out uint NumberOfBytesWritten, IntPtr Reserved);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         static public extern FileTypes GetFileType(Microsoft.Win32.SafeHandles.SafeFileHandle hObject);

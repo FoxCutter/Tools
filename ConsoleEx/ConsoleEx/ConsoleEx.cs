@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using Microsoft.Win32.SafeHandles;
+using System.Text;
 
 namespace ConsoleLib
 {
@@ -654,7 +651,7 @@ namespace ConsoleLib
 
         internal static Microsoft.Win32.SafeHandles.SafeFileHandle GetStdHandle(WinAPI.StdHandleType StdHandle)
         {
-            return new SafeFileHandle(WinAPI.GetStdHandle(StdHandle), false);
+            return new Microsoft.Win32.SafeHandles.SafeFileHandle(WinAPI.GetStdHandle(StdHandle), false);
         }
 
         internal static Microsoft.Win32.SafeHandles.SafeFileHandle GetConsoleOutputHandle()

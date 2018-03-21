@@ -49,13 +49,13 @@ namespace ConsoleTest
                             if (ConsoleEx.InputBuffer.CanDisplay(Event.KeyEvent))
                                 ConsoleEx.ScreenBuffer.Write(Event.KeyEvent.Character);
 
-                            var Key = Event.KeyEvent;
+                            //var Key = Event.KeyEvent;
 
-                            ConsoleEx.ScreenBuffer.Write("'{0}' {1} Rep: {2} ", Key.Character, (Key.KeyDown != 0) ? "DOWN" : "UP  ", Key.RepeatCount);
-                            ConsoleEx.ScreenBuffer.Write("Key: {0,2:X}, Scan: {1,2:X} ", Key.VirtualKeyCode, Key.VirtualScanCode);
-                            ConsoleEx.ScreenBuffer.Write("Ctrl: {0,4:X4} ", (int)Key.ControlKeyState);
+                            //ConsoleEx.ScreenBuffer.Write("'{0}' {1} Rep: {2} ", Key.Character, (Key.KeyDown != 0) ? "DOWN" : "UP  ", Key.RepeatCount);
+                            //ConsoleEx.ScreenBuffer.Write("Key: {0,2:X}, Scan: {1,2:X} ", Key.VirtualKeyCode, Key.VirtualScanCode);
+                            //ConsoleEx.ScreenBuffer.Write("Ctrl: {0,4:X4} ", (int)Key.ControlKeyState);
 
-                            ConsoleEx.ScreenBuffer.WriteLine();
+                            //ConsoleEx.ScreenBuffer.WriteLine();
                             //System.Threading.Thread.Sleep(100);
                             
                             //ConsoleEx.ScreenBuffer.WriteLine("'{3}' {0}:{1}-{2} {4}", Event.KeyEvent.VirtualKeyCode, Event.KeyEvent.VirtualScanCode, Event.KeyEvent.ControlKeyState.ToString(), Event.KeyEvent.Character, Event.KeyEvent.KeyDown);
