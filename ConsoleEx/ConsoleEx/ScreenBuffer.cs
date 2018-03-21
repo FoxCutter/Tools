@@ -31,8 +31,6 @@ namespace ConsoleLib
         public static void Write    (ulong value);
         public static void WriteLine(ulong value);
 
-        public static void Write    (string format, params object[] arg);
-        public static void WriteLine(string format, params object[] arg);
         public static void Write    (string format, object arg0);
         public static void WriteLine(string format, object arg0);
         public static void Write    (string format, object arg0, object arg1);
@@ -170,7 +168,7 @@ namespace ConsoleLib
 
         #region Properties
 
-        internal Microsoft.Win32.SafeHandles.SafeFileHandle Handle
+        public Microsoft.Win32.SafeHandles.SafeFileHandle Handle
         {
             get { return BufferHandle; }
         }
@@ -640,6 +638,17 @@ namespace ConsoleLib
             Write(Data);
             WriteLine();
         }
+
+        public void Write(string format, params object[] arg)
+        {
+            Write(string.Format(format, arg));
+        }
+
+        public void WriteLine(string format, params object[] arg)
+        {
+            WriteLine(string.Format(format, arg));
+        }
+
 
         //---------------------------------------------------
         

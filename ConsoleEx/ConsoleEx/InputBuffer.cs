@@ -66,7 +66,7 @@ namespace ConsoleLib
 
         #region Properties
 
-        internal Microsoft.Win32.SafeHandles.SafeFileHandle Handle
+        public Microsoft.Win32.SafeHandles.SafeFileHandle Handle
         {
             get { return BufferHandle; }
         }
@@ -441,7 +441,7 @@ namespace ConsoleLib
                     KeyEvent = NextEvent(InputRecordType.KeyEvent).KeyEvent;
                     KeyEvent.RepeatCount--;
 
-                    if (KeyEvent.KeyDown != 0)
+                    if (CanDisplay(KeyEvent))
                         break;
                 }
             }
@@ -524,5 +524,28 @@ namespace ConsoleLib
         }
 
         #endregion
+
+        // Returs true if the value of Key.Character can be displayed.
+        public bool CanDisplay(WinAPI.KeyEventRecord Key)
+        {
+            bool AltKey = Key.VirtualKeyCode == 0x12;
+            bool CtrlKey = Key.VirtualKeyCode == 0x11;
+            bool ShiftKey = Key.VirtualKeyCode == 0x10;
+            
+            // Win and App keys
+            bool SpecialKey = Key.VirtualKeyCode >= 0x5B && Key.VirtualKeyCode <= 0x5D;
+
+            // Num Lock, Scroll Lock, Caps Lock
+            bool LockKey = Key.VirtualKeyCode == 0x90 || Key.VirtualKeyCode == 0x91 || Key.VirtualKeyCode == 0x14;
+
+            if (SpecialKey || LockKey || CtrlKey || ShiftKey)
+                return false;
+
+            // Alt keys are a bit weird in that the Alt-up can contain a valid character, entered via ALT + Numpad
+            if (Key.KeyDown == 0 && !AltKey)
+                return false;
+
+            return Key.Character != '\0';
+        }
     }
 }

@@ -429,9 +429,9 @@ namespace ConsoleLib
             public Coord FontSize;
             public uint FontFamily;
             public uint FontWeight;
-            
+
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-            public String FontName;
+            public String FaceName;
 
             public void SetSize()
             {
@@ -621,6 +621,7 @@ namespace ConsoleLib
         static public extern bool SetCurrentConsoleFontEx(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, bool MaximumWindow, ref ConsoleFontInfoEx ConsoleCurrentFontEx);
 
 
+
         [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static public extern bool ReadConsoleOutput(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, [Out][MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] CharInfo[,] Buffer, Coord BufferSize, Coord BufferCoord, ref SmallRect ReadRegion);
 
@@ -699,6 +700,22 @@ namespace ConsoleLib
 
         [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static public extern bool WriteConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] Buffer, uint NumberOfCharsToWrite, out uint NumberOfCharsWritten, IntPtr Reserved);
+
+        #endregion
+
+        #region Undocumented Console functions
+
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        static public extern bool SetConsoleFont(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, uint fontIndex);
+
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        static public extern bool GetConsoleFontInfo(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, bool MaximumWindow, uint numFonts, [Out][MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] ConsoleFontInfo[] ConsoleCurrentFont);
+
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        static public extern uint GetNumberOfConsoleFonts();
+
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        static public extern bool SetConsoleIcon(IntPtr hIcon);
 
         #endregion
 
