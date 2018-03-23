@@ -506,7 +506,7 @@ namespace ConsoleLib
 
 
         [DllImport("Kernel32.dll", SetLastError = true)]
-        static public extern bool GetConsoleHistoryInfo(out ConsoleHistoryInfo ConsoleHistoryInfo);
+        static public extern bool GetConsoleHistoryInfo(ref ConsoleHistoryInfo ConsoleHistoryInfo);
 
         [DllImport("Kernel32.dll", SetLastError = true)]
         static public extern bool SetConsoleHistoryInfo(ref ConsoleHistoryInfo ConsoleHistoryInfo);
@@ -683,7 +683,7 @@ namespace ConsoleLib
 
 
         [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        static public extern bool ReadConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, StringBuilder Buffer, uint NumberofCharsToRead, out uint NumberOfCharsRead, ConsoleReadConsoleControl InputControl);
+        static public extern bool ReadConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, StringBuilder Buffer, uint NumberofCharsToRead, out uint NumberOfCharsRead, ref ConsoleReadConsoleControl InputControl);
 
         [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static public extern bool ReadConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, StringBuilder Buffer, uint NumberofCharsToRead, out uint NumberOfCharsRead, IntPtr Reserved);
@@ -696,22 +696,5 @@ namespace ConsoleLib
         static public extern bool WriteConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] Buffer, uint NumberOfCharsToWrite, out uint NumberOfCharsWritten, IntPtr Reserved);
 
         #endregion
-
-        #region Undocumented Console functions
-
-        [DllImport("Kernel32.dll", SetLastError = true)]
-        static public extern bool SetConsoleFont(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, uint fontIndex);
-
-        [DllImport("Kernel32.dll", SetLastError = true)]
-        static public extern bool GetConsoleFontInfo(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, bool MaximumWindow, uint numFonts, [Out][MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] ConsoleFontInfo[] ConsoleCurrentFont);
-
-        [DllImport("Kernel32.dll", SetLastError = true)]
-        static public extern uint GetNumberOfConsoleFonts();
-
-        [DllImport("Kernel32.dll", SetLastError = true)]
-        static public extern bool SetConsoleIcon(IntPtr hIcon);
-
-        #endregion
-
     }
 }

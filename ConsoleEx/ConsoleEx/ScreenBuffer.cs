@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ConsoleLib
 {
@@ -63,10 +64,6 @@ namespace ConsoleLib
         {
             Mode = CloneFrom.Mode;            
             WinAPI.ConsoleScreenBufferInfoEx TempBufferInfo = CloneFrom.ScreenBufferInfo;
-            
-            // When setting the screen buffer info the window right/bottom is total cell count, not last
-            TempBufferInfo.Window.Right++;
-            TempBufferInfo.Window.Bottom++;
             
             ScreenBufferInfo = TempBufferInfo;
 
@@ -457,7 +454,7 @@ namespace ConsoleLib
                 }
             }
         }
-        
+
         internal WinAPI.ConsoleScreenBufferInfoEx ScreenBufferInfo
         {
             get
@@ -475,6 +472,10 @@ namespace ConsoleLib
 
             set
             {
+                // When setting the screen buffer info the window right/bottom is total cell count, not last
+                value.Window.Right++;
+                value.Window.Bottom++;
+
                 if (!WinAPI.SetConsoleScreenBufferInfoEx(BufferHandle, ref value))
                 {
                     throw new ConsoleExException("ConsoleEx: Unable to set screen buffer info.");
@@ -901,6 +902,32 @@ namespace ConsoleLib
             Attribute = OriginalAttributes;
         }
 
+        public List<System.Drawing.Color> GetColorTable()
+        {
+            uint[] Temp = ScreenBufferInfo.ColorTable;
+
+            List<System.Drawing.Color> Colors = new List<System.Drawing.Color>();
+
+            foreach (uint e in Temp)
+            {
+                Colors.Add(System.Drawing.Color.FromArgb((int)e));
+            }
+
+            return Colors;
+        }
+        
+        public void SetColorTable(List<System.Drawing.Color> Colors)
+        {
+            WinAPI.ConsoleScreenBufferInfoEx Temp = ScreenBufferInfo;
+            for (int x = 0; x < Temp.ColorTable.Length && x < Colors.Count; x++)
+            {
+                Temp.ColorTable[x] = (uint)Colors[x].ToArgb();
+            }
+
+            ScreenBufferInfo = Temp;
+        }
+
+        
         #endregion
 
     }

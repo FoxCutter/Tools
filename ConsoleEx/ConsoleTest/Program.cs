@@ -5,18 +5,34 @@ using System.Text;
 using System.Threading.Tasks;
 using ConsoleLib;
 
+using System.Runtime.InteropServices;
+
+
 namespace ConsoleTest
 {
+
     class Program
     {
         static void Main(string[] args)
         {
+            ConsoleEx.ScreenBuffer.WriteLine("Lorem ipsum dolor sit amet, nec fusce potenti eget egestas, mauris commodo felis vestibulum vestibulum. Urna consequat sed faucibus duis, ac non tristique tortor, eu tristique lacinia vehicula diam, consectetuer quisque felis sollicitudin. Non non diam duis, consectetuer a tortor est nisl. Accumsan pellentesque dictum nulla eget, elit non commodo turpis, libero in viverra nibh amet.");
+
+
+            ConsoleEx.AddAlias("aaa", "bbb", "consoletest.exe");
+
+            string t1 = ConsoleEx.InputBuffer.ReadLine();
+            string t2 = ConsoleEx.InputBuffer.ReadLine();
+
+
+
+
+            
             //ConsoleEx.ScreenBuffer.WriteLine("Lorem ipsum dolor sit amet, nec fusce potenti eget egestas, mauris commodo felis vestibulum vestibulum. Urna consequat sed faucibus duis, ac non tristique tortor, eu tristique lacinia vehicula diam, consectetuer quisque felis sollicitudin. Non non diam duis, consectetuer a tortor est nisl. Accumsan pellentesque dictum nulla eget, elit non commodo turpis, libero in viverra nibh amet.");
+
             ConsoleEx.ScreenBuffer.Clear();
             ConsoleEx.ScreenBuffer.SetWindowSize(80, 25);
             ConsoleEx.ScreenBuffer.SetBufferSize(80, 25);
 
-            ConsoleEx.InputBuffer.ProcessedInput = false;
 
             WinAPI.InputRecord Event = new WinAPI.InputRecord();
             bool Done = false;
@@ -47,7 +63,12 @@ namespace ConsoleTest
                         //if (Event.KeyEvent.KeyDown != 0 || Event.KeyEvent.VirtualKeyCode == 0x12)
                         {
                             if (ConsoleEx.InputBuffer.CanDisplay(Event.KeyEvent))
-                                ConsoleEx.ScreenBuffer.Write(Event.KeyEvent.Character);
+                            {
+                                if (Event.KeyEvent.Character == '\r')
+                                    ConsoleEx.ScreenBuffer.Write('\n');
+                                else
+                                    ConsoleEx.ScreenBuffer.Write(Event.KeyEvent.Character);
+                            }
 
                             //var Key = Event.KeyEvent;
 

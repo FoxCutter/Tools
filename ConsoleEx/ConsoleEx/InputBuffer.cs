@@ -168,8 +168,10 @@ namespace ConsoleLib
             {
                 if (value)
                     Mode |= ConsoleExInputMode.LineInput;
+                
                 else
-                    Mode &= ~ConsoleExInputMode.LineInput;
+                    // If you can't turn off LineInput while EchoInput is on, so turn off both.
+                    Mode &= ~(ConsoleExInputMode.LineInput | ConsoleExInputMode.EchoInput);
             }
         }
 
@@ -504,7 +506,7 @@ namespace ConsoleLib
                 Data.Length = (int)DataRead;
                 Ret.Append(Data);
 
-                // Check for both CL & LF. If it's processed input we'll get both CR/LF, if it's not we'll just get a CR.
+                // Check for both CL & LF. If it's processed line input we'll get both CR/LF, if it's not we'll just get a CR.
                 if (Data.Length > 0 && (Data[(int)(DataRead - 1)] == '\n' || Data[(int)(DataRead - 1)] == '\r'))
                     Done = true;
 
