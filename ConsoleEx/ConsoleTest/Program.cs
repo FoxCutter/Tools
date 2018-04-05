@@ -10,43 +10,44 @@ using System.Runtime.InteropServices;
 
 namespace ConsoleTest
 {
-    // " ☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~⌂ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ "
+    // " ☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~⌂
+    //  ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ "
     public enum Drawing
     {
         // Control Charcaters
-        NUL,
-        SOH,
-        STX,
-        ETX,
-        EOT,
-        ENQ,
-        ACK,
-        BEL,
-        BS,
-        HT,
-        LF,
-        VT,
-        FF,
-        CR,
-        SO,
-        SI,
-        DLE,
-        DC1,
-        DC2, 
-        DC3, 
-        DC4,
-        NAK,
-        SYN,
-        ETB,
-        CAN,
-        EM,
-        SUB,
-        ESC,
-        FS,
-        GS,
-        RS,
-        US,
-
+        NUL = 0,    //    - NULL
+        SOH,        // ^A - START OF HEADING
+        STX,        // ^B - START OF TEXT
+        ETX,        // ^C - END OF TEXT
+        EOT,        // ^D - END OF TRANSMISSION
+        ENQ,        // ^E - ENQUIRY
+        ACK,        // ^F - ACKNOWLEDGE
+        BEL,        // ^G - BELL
+        BS,         // ^H - BACKSPACE
+        HT,         // ^I - HORIZONTAL TABULATION
+        LF,         // ^J - LINE FEED
+        VT,         // ^K - VERTICAL TABULATION
+        FF,         // ^L - FORM FEED
+        CR,         // ^M - CARRIAGE RETURN
+        SO,         // ^N - SHIFT OUT
+        SI,         // ^O - SHIFT IN
+        DLE,        // ^P - DATA LINK ESCAPE
+        DC1,        // ^Q - DEVICE CONTROL ONE
+        DC2,        // ^R - DEVICE CONTROL TWO
+        DC3,        // ^S - DEVICE CONTROL THREE
+        DC4,        // ^T - DEVICE CONTROL FOUR
+        NAK,        // ^U - NEGATIVE ACKNOWLEDGE
+        SYN,        // ^V - SYNCHRONOUS IDLE
+        ETB,        // ^W - END OF TRANSMISSION BLOCK
+        CAN,        // ^X - CANCEL
+        EM,         // ^Y - END OF MEDIUM
+        SUB,        // ^Z - SUBSTITUTE
+        ESC,        // ^[ - ESCAPE
+        FS,         // ^\ - FILE SEPARATOR
+        GS,         // ^] - GROUP SEPARATOR
+        RS,         // ^^ - RECORD SEPARATOR
+        US,         // ^_ - UNIT SEPARATOR
+        DEL = 127,  //    - DELETE
         
         // General Image charcaters
         Face                    = '☺',
@@ -56,9 +57,9 @@ namespace ConsoleTest
         Club                    = '♣',
         Spade                   = '♠',
         Dot                     = '•',
-        InvertedDot             = '◘',
+        InverseDot              = '◘',
         Circle                  = '○',
-        InvertedCircle          = '◙',
+        InverseCircle           = '◙',
         Mars                    = '♂',
         Venus                   = '♀',
         EighthNote              = '♪',
@@ -67,7 +68,7 @@ namespace ConsoleTest
         RightTriangle           = '►',
         LeftTriangle            = '◄',
         UpDownArrow             = '↕',
-        DoubleExclimation       = '‼',
+        DoubleExclamation       = '‼',
         Paragraph               = '¶',
         Section                 = '§',
         BlackRectangle          = '▬',
@@ -99,7 +100,15 @@ namespace ConsoleTest
         InvertedExclimation     = '¡',
         AngleQuoteLeft          = '«',
         AngleQuoteRight         = '»',
+        LightShade              = 0x2591, // These charcaters render double height in my default font, so just stick to using the code points.
+        MediumShade             = 0x2592,
+        DarkShade               = 0x2593,
 
+        FullBlock               = '█',
+        LowerHalfBlock          = '▄',
+        LeftHalfBlock           = '▌',
+        RightHalfBlock          = '▐',
+        UpperHalfBlock          = '▀',
         Alpha                   = 'α',
         Beta                    = 'ß',
         Gamma                   = 'Γ',
@@ -130,20 +139,11 @@ namespace ConsoleTest
         SquareRoot              = '√',
         SuperScriptN            = 'ⁿ',
         SuperScript2            = '²',
-
-        NonBreakSpace           = 0x00a0,
-
-        // Box Drawing
-        LightShade              = 0x2591, // These charcaters render double height in my default font, so just stick to using the code points.
-        MediumShade             = 0x2592,
-        DarkShade               = 0x2593,
-        FullBlock               = '█',
-        LowerHalfBlock          = '▄',
-        LeftHalfBlock           = '▌',
-        RightHalfBlock          = '▐',
-        UpperHalfBlock          = '▀',
         BlackSquare             = '■',
 
+        NonBreakSpace           = 0x00a0,    
+
+        // Box Drawing
         UpperLeft               = '┌',   
         UpperRight              = '┐',   
         LowerLeft               = '└',   
@@ -190,50 +190,27 @@ namespace ConsoleTest
         DoubleVerCrossRight     = '╢',
         DoubleVerCrossDown      = '╥',
         DoubleVerCrossUp        = '╨',
-        DoubleVerCrossMiddle    = '╫',
+        DoubleVerCrossMiddle    = '╫',    
     }
 
     class Program
     {
+
+        
         static void Main(string[] args)
         {
-            //ConsoleEx.ScreenBuffer.WriteLine("Lorem ipsum dolor sit amet, nec fusce potenti eget egestas, mauris commodo felis vestibulum vestibulum. Urna consequat sed faucibus duis, ac non tristique tortor, eu tristique lacinia vehicula diam, consectetuer quisque felis sollicitudin. Non non diam duis, consectetuer a tortor est nisl. Accumsan pellentesque dictum nulla eget, elit non commodo turpis, libero in viverra nibh amet.");
 
-
-            //ConsoleEx.AddAlias("aaa", "bbb", "consoletest.exe");
-
-            //string t1 = ConsoleEx.InputBuffer.ReadLine();
-            //string t2 = ConsoleEx.InputBuffer.ReadLine();
-
-            //System.Windows.Form.Keys;
-            
-                        
-            //ConsoleEx.ScreenBuffer.WriteLine("Lorem ipsum dolor sit amet, nec fusce potenti eget egestas, mauris commodo felis vestibulum vestibulum. Urna consequat sed faucibus duis, ac non tristique tortor, eu tristique lacinia vehicula diam, consectetuer quisque felis sollicitudin. Non non diam duis, consectetuer a tortor est nisl. Accumsan pellentesque dictum nulla eget, elit non commodo turpis, libero in viverra nibh amet.");
-
-            ConsoleEx.ScreenBuffer.ProcessedOutput = false;
-            byte[] val = new byte[1];
-
-            for (int x = 0; x < 0x100; x++)
-            {
-                uint Writen;
-                val[0] = (byte)x;
-                //WinAPI.WriteConsole(ConsoleEx.ScreenBuffer.Handle, val, 1, out Writen, IntPtr.Zero);
-                WinAPI.WriteFile(ConsoleEx.ScreenBuffer.Handle, val, 1, out Writen, IntPtr.Zero);
-                //ConsoleEx.ScreenBuffer.Write(x);
-            }
-
-
-
-            ConsoleEx.ScreenBuffer.ProcessedOutput = true;
             ConsoleEx.InputBuffer.LineInput = false;
             ConsoleEx.InputBuffer.ProcessedInput = false;
             ConsoleEx.InputBuffer.QuickEditMode = false;
             ConsoleEx.InputBuffer.MouseInput = true;
+            //var a = ConsoleEx.InputBuffer.ReadLine();
 
+            //ConsoleEx.ScreenBuffer.ProcessedOutput = false;
             ConsoleEx.ScreenBuffer.SetWindowSize(80, 25);
-            ConsoleEx.ScreenBuffer.SetBufferSize(80, 25);
+            ConsoleEx.ScreenBuffer.SetBufferSize(80, 125);
             ConsoleEx.ScreenBuffer.Clear();
-
+            
             WinAPI.InputRecord Event = new WinAPI.InputRecord();
             bool Done = false;
             do
@@ -243,6 +220,7 @@ namespace ConsoleTest
                 switch ((InputRecordType)Event.EventType)
                 {
                     case InputRecordType.FocusEvent:
+                        ConsoleEx.ScreenBuffer.WriteLine("F: {0}", Event.FocusEvent.SetFocus);
                         break;
 
                     case InputRecordType.MenuEvent:
@@ -263,21 +241,29 @@ namespace ConsoleTest
                     case InputRecordType.KeyEvent:
                         if (ConsoleEx.InputBuffer.CanDisplay(Event.KeyEvent))
                         {
-                            if (Event.KeyEvent.Character == '\r')
-                                ConsoleEx.ScreenBuffer.Write('\n');
+                            ConsoleEx.ScreenBuffer.ProcessedOutput = false;
+                            ConsoleEx.ScreenBuffer.Write("{0:X4} ", (int)Event.KeyEvent.Character);
+                            if (Event.KeyEvent.Character > 0 && Event.KeyEvent.Character < 32)
+                            {
+                                ConsoleEx.ScreenBuffer.Write('^');
+                                ConsoleEx.ScreenBuffer.Write((char)('A' + Event.KeyEvent.Character - 1));
+                            }
                             else
                                 ConsoleEx.ScreenBuffer.Write(Event.KeyEvent.Character);
+
+                            ConsoleEx.ScreenBuffer.ProcessedOutput = true;
+
+                            //if (Event.KeyEvent.Character == '\r')
+                                ConsoleEx.ScreenBuffer.Write('\n');
                         }
                         //else
                         //{
                         //    var Key = Event.KeyEvent;
-                            
-                        //    ConsoleEx.ScreenBuffer.Write("'{0}' {3:X4} {1} Rep: {2} ", Key.Character, (Key.KeyDown != 0) ? "DOWN" : "UP  ", Key.RepeatCount, (int)Key.Character);
-                        //    ConsoleEx.ScreenBuffer.Write("Key: {0}, Scan: {1,2:X} ", ((System.ConsoleKey)Key.VirtualKeyCode).ToString(), Key.VirtualScanCode);
-                        //    ConsoleEx.ScreenBuffer.Write("Ctrl: {0,4:X4} ", (int)Key.ControlKeyState);
-                        //    ConsoleEx.ScreenBuffer.WriteLine();
 
-                        //    //ConsoleEx.ScreenBuffer.WriteLine("'{3}' {0}:{1}-{2} {4}", Event.KeyEvent.VirtualKeyCode, Event.KeyEvent.VirtualScanCode, Event.KeyEvent.ControlKeyState.ToString(), Event.KeyEvent.Character, Event.KeyEvent.KeyDown);
+                        //    ConsoleEx.ScreenBuffer.Write("'{0}' {3:X4} {1} Rep: {2} ", (char)Key.Character, (Key.KeyDown != 0) ? "DOWN" : "UP  ", Key.RepeatCount, (int)Key.Character);
+                        //    ConsoleEx.ScreenBuffer.Write("Key: {0,2:X}, Scan: {1,2:X} ", Key.VirtualKeyCode, Key.VirtualScanCode);
+                        //    ConsoleEx.ScreenBuffer.Write("Ctrl: {0} ", Key.ControlKeyState.ToString());
+                        //    ConsoleEx.ScreenBuffer.WriteLine();
                         //}
                         break;
 

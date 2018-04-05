@@ -388,7 +388,7 @@ namespace ConsoleLib
             public Coord BufferSize;
         }
 
-        [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Unicode)]
+        [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Auto)]
         public struct InputRecord
         {
             [FieldOffset(0)] public InputRecordType EventType;
@@ -415,13 +415,28 @@ namespace ConsoleLib
             public Coord FontSize;
         }
 
+        [Flags]
+        public enum FontFamily : uint
+        {
+            FixedPitch  = 0x01,
+            Vector      = 0x02,
+            TrueType    = 0x04,
+            Device      = 0x08,
+
+            Roman       = 0x10,
+            Swiss       = 0x20,
+            Modern      = 0x30,
+            Script      = 0x40,
+            Decorative  = 0x50,
+        }
+        
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct ConsoleFontInfoEx
         {
             public uint Size;
             public uint Font;
             public Coord FontSize;
-            public uint FontFamily;
+            public FontFamily FontFamily;
             public uint FontWeight;
 
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
@@ -633,6 +648,9 @@ namespace ConsoleLib
         static public extern bool WriteConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, [Out][MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] char[] Buffer, uint NumberOfCharsToWrite, out uint NumberOfCharsWritten, IntPtr Reserved);
 
         [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        static public extern bool WriteConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, ref char Buffer, uint NumberOfCharsToWrite, out uint NumberOfCharsWritten, IntPtr Reserved);
+
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static public extern bool WriteConsoleOutput(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] CharInfo[,] Buffer, Coord BufferSize, Coord BufferCoord, ref SmallRect WriteRegion);
 
         [DllImport("Kernel32.dll", SetLastError = true)]
@@ -672,13 +690,16 @@ namespace ConsoleLib
         [DllImport("Kernel32.dll", SetLastError = true)]
         static public extern bool GetNumberOfConsoleInputEvents(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, out uint NumberOfEvents);
 
-        [DllImport("Kernel32.dll", SetLastError = true)]
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static public extern bool PeekConsoleInput(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, [Out] InputRecord[] Buffer, uint Length, out uint NumberOfEventsRead);
 
-        [DllImport("Kernel32.dll", SetLastError = true)]
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static public extern bool ReadConsoleInput(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, [Out] InputRecord[] Buffer, uint Length, out uint NumberOfEventsRead);
 
-        [DllImport("Kernel32.dll", SetLastError = true)]
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        static public extern bool ReadConsoleInput(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, out InputRecord Buffer, uint Length, out uint NumberOfEventsRead);
+
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static public extern bool WriteConsoleInput(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, InputRecord[] Buffer, uint Length, out uint NumberOfEventsWritten);
 
 
@@ -689,11 +710,18 @@ namespace ConsoleLib
         static public extern bool ReadConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, StringBuilder Buffer, uint NumberofCharsToRead, out uint NumberOfCharsRead, IntPtr Reserved);
 
 
-        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi, EntryPoint = "ReadConsoleA")]
         static public extern bool ReadConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] Buffer, uint NumberofCharsToRead, out uint NumberOfCharsRead, IntPtr Reserved);
 
-        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi, EntryPoint = "ReadConsoleA")]
+        static public extern bool ReadConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleInput, ref byte Buffer, uint NumberofCharsToRead, out uint NumberOfCharsRead, IntPtr Reserved);
+
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi, EntryPoint = "WriteConsoleA")]
         static public extern bool WriteConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] Buffer, uint NumberOfCharsToWrite, out uint NumberOfCharsWritten, IntPtr Reserved);
+
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi, EntryPoint = "WriteConsoleA")]
+        static public extern bool WriteConsole(Microsoft.Win32.SafeHandles.SafeFileHandle ConsoleOutput,ref byte Buffer, uint NumberOfCharsToWrite, out uint NumberOfCharsWritten, IntPtr Reserved);
 
         #endregion
     }
