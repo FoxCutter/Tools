@@ -10,196 +10,154 @@ using System.Runtime.InteropServices;
 
 namespace ConsoleTest
 {
-    // " ☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~⌂
-    //  ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ "
-    public enum Drawing
-    {
-        // Control Charcaters
-        NUL = 0,    //    - NULL
-        SOH,        // ^A - START OF HEADING
-        STX,        // ^B - START OF TEXT
-        ETX,        // ^C - END OF TEXT
-        EOT,        // ^D - END OF TRANSMISSION
-        ENQ,        // ^E - ENQUIRY
-        ACK,        // ^F - ACKNOWLEDGE
-        BEL,        // ^G - BELL
-        BS,         // ^H - BACKSPACE
-        HT,         // ^I - HORIZONTAL TABULATION
-        LF,         // ^J - LINE FEED
-        VT,         // ^K - VERTICAL TABULATION
-        FF,         // ^L - FORM FEED
-        CR,         // ^M - CARRIAGE RETURN
-        SO,         // ^N - SHIFT OUT
-        SI,         // ^O - SHIFT IN
-        DLE,        // ^P - DATA LINK ESCAPE
-        DC1,        // ^Q - DEVICE CONTROL ONE
-        DC2,        // ^R - DEVICE CONTROL TWO
-        DC3,        // ^S - DEVICE CONTROL THREE
-        DC4,        // ^T - DEVICE CONTROL FOUR
-        NAK,        // ^U - NEGATIVE ACKNOWLEDGE
-        SYN,        // ^V - SYNCHRONOUS IDLE
-        ETB,        // ^W - END OF TRANSMISSION BLOCK
-        CAN,        // ^X - CANCEL
-        EM,         // ^Y - END OF MEDIUM
-        SUB,        // ^Z - SUBSTITUTE
-        ESC,        // ^[ - ESCAPE
-        FS,         // ^\ - FILE SEPARATOR
-        GS,         // ^] - GROUP SEPARATOR
-        RS,         // ^^ - RECORD SEPARATOR
-        US,         // ^_ - UNIT SEPARATOR
-        DEL = 127,  //    - DELETE
-        
-        // General Image charcaters
-        Face                    = '☺',
-        InvertedFace            = '☻',
-        Heart                   = '♥',
-        Dimand                  = '♦',
-        Club                    = '♣',
-        Spade                   = '♠',
-        Dot                     = '•',
-        InverseDot              = '◘',
-        Circle                  = '○',
-        InverseCircle           = '◙',
-        Mars                    = '♂',
-        Venus                   = '♀',
-        EighthNote              = '♪',
-        DoubleNote              = '♫',
-        Solar                   = '☼',
-        RightTriangle           = '►',
-        LeftTriangle            = '◄',
-        UpDownArrow             = '↕',
-        DoubleExclamation       = '‼',
-        Paragraph               = '¶',
-        Section                 = '§',
-        BlackRectangle          = '▬',
-        UpDownArrowWithBase     = '↨',
-        UpArrow                 = '↑',
-        DownArrow               = '↓',
-        RightArrow              = '→',
-        LeftArrow               = '←',
-        RightAngle              = '∟',
-        LeftRightArrow          = '↔',
-        UpTriangle              = '▲',
-        DownTriangle            = '▼',        
-
-        House                   = '⌂',
-        
-        Cent                    = '¢',
-        Pound                   = '£',
-        Yen                     = '¥',
-        Peseta                  = '₧',
-        Florin                  = 'ƒ',
-
-        OrdinalFeminine         = 'ª',
-        OrdinalMasculine        = 'º',
-        InvertedQuestion        = '¿',
-        ReversedNotSign         = '⌐',
-        NotSign                 = '¬',
-        OneHalf                 = '½',
-        OneForth                = '¼',
-        InvertedExclimation     = '¡',
-        AngleQuoteLeft          = '«',
-        AngleQuoteRight         = '»',
-        LightShade              = 0x2591, // These charcaters render double height in my default font, so just stick to using the code points.
-        MediumShade             = 0x2592,
-        DarkShade               = 0x2593,
-
-        FullBlock               = '█',
-        LowerHalfBlock          = '▄',
-        LeftHalfBlock           = '▌',
-        RightHalfBlock          = '▐',
-        UpperHalfBlock          = '▀',
-        Alpha                   = 'α',
-        Beta                    = 'ß',
-        Gamma                   = 'Γ',
-        Pi                      = 'π',
-        CapitalSigma            = 'Σ',
-        Sigma                   = 'σ',
-        Micro                   = 'µ',
-        Tau                     = 'τ',
-        CapitalPhi              = 'Φ',
-        Theta                   = 'Θ',
-        Omega                   = 'Ω',
-        Delta                   = 'δ',
-        Infinity                = '∞',
-        Phi                     = 'φ',
-        Epsilon                 = 'ε',
-        Intersection            = '∩',
-        IdenticalTo             = '≡',
-        PlusMinus               = '±',
-        GreaterThenEqual        = '≥',
-        LessThenEqual           = '≤',
-        IntegralTop             = '⌠',
-        IntegralBottom          = '⌡',
-        Division                = '÷',
-        AlmostEqualTo           = '≈',
-        Degree                  = '°',
-        Bullet                  = 0x2219, // These two look almost the same so use the code point for them to be sure
-        MiddleDot               = 0x00B7,
-        SquareRoot              = '√',
-        SuperScriptN            = 'ⁿ',
-        SuperScript2            = '²',
-        BlackSquare             = '■',
-
-        NonBreakSpace           = 0x00a0,    
-
-        // Box Drawing
-        UpperLeft               = '┌',   
-        UpperRight              = '┐',   
-        LowerLeft               = '└',   
-        LowerRight              = '┘',   
-        Vertical                = '│',   
-        Horizontal              = '─',
-        CrossLeft               = '├',
-        CrossRight              = '┤',
-        CrossDown               = '┬',
-        CrossUp                 = '┴',
-        CrossMiddle             = '┼',
-
-        DoubleUpperLeft         = '╔',
-        DoubleUpperRight        = '╗',
-        DoubleLowerLeft         = '╚',
-        DoubleLowerRight        = '╝',
-        DoubleVertical          = '║',
-        DoubleHorizontal        = '═',
-        DoubleCrossLeft         = '╠',
-        DoubleCrossRight        = '╣',
-        DoubleCrossDown         = '╦',
-        DoubleCrossUp           = '╩',
-        DoubleCrossMiddle       = '╬',
-
-        DoubleHorUpperLeft      = '╒',
-        DoubleHorUpperRight     = '╕',
-        DoubleHorLowerLeft      = '╘',
-        DoubleHorLowerRight     = '╛',
-        DoubleHorVertical       = '│',
-        DoubleHorHorizontal     = '═',
-        DoubleHorCrossLeft      = '╞',
-        DoubleHorCrossRight     = '╡',
-        DoubleHorCrossDown      = '╤',
-        DoubleHorCrossUp        = '╧',
-        DoubleHorCrossMiddle    = '╪',
-
-        DoubleVerUpperLeft      = '╓',
-        DoubleVerUpperRight     = '╖',
-        DoubleVerLowerLeft      = '╙',
-        DoubleVerLowerRight     = '╜',
-        DoubleVerDoubleVertical = '║',
-        DoubleVerHorizontal     = '─',
-        DoubleVerCrossLeft      = '╟',
-        DoubleVerCrossRight     = '╢',
-        DoubleVerCrossDown      = '╥',
-        DoubleVerCrossUp        = '╨',
-        DoubleVerCrossMiddle    = '╫',    
-    }
-
     class Program
     {
+        static char[] BoxDrawingSingle = new char[] 
+        { 
+            (char)Characters.UpperLeft,
+            (char)Characters.UpperRight,
+            (char)Characters.LowerLeft,
+            (char)Characters.LowerRight,
+            (char)Characters.Vertical,
+            (char)Characters.Horizontal,
+            (char)Characters.CrossLeft,
+            (char)Characters.CrossRight,
+            (char)Characters.CrossDown,
+            (char)Characters.CrossUp,
+            (char)Characters.CrossMiddle,
+            ' ',
+        };
 
-        
+        static char[] BoxDrawingDouble = new char[] 
+        { 
+            (char)Characters.DoubleUpperLeft,
+            (char)Characters.DoubleUpperRight,
+            (char)Characters.DoubleLowerLeft,
+            (char)Characters.DoubleLowerRight,
+            (char)Characters.DoubleVertical,
+            (char)Characters.DoubleHorizontal,
+            (char)Characters.DoubleCrossLeft,
+            (char)Characters.DoubleCrossRight,
+            (char)Characters.DoubleCrossDown,
+            (char)Characters.DoubleCrossUp,
+            (char)Characters.DoubleCrossMiddle,
+            (char)Characters.LightShade,
+        };
+
+        static char[] BoxDrawingDoubleHor = new char[] 
+        { 
+            (char)Characters.DoubleHorUpperLeft,
+            (char)Characters.DoubleHorUpperRight,
+            (char)Characters.DoubleHorLowerLeft,
+            (char)Characters.DoubleHorLowerRight,
+            (char)Characters.Vertical,
+            (char)Characters.DoubleHorizontal,
+            (char)Characters.DoubleHorCrossLeft,
+            (char)Characters.DoubleHorCrossRight,
+            (char)Characters.DoubleHorCrossDown,
+            (char)Characters.DoubleHorCrossUp,
+            (char)Characters.DoubleHorCrossMiddle,
+            (char)Characters.MediumShade,
+        };
+
+
+        static char[] BoxDrawingDoubleVer = new char[] 
+        { 
+            (char)Characters.DoubleVerUpperLeft,
+            (char)Characters.DoubleVerUpperRight,
+            (char)Characters.DoubleVerLowerLeft,
+            (char)Characters.DoubleVerLowerRight,
+            (char)Characters.DoubleVertical,
+            (char)Characters.Horizontal,
+            (char)Characters.DoubleVerCrossLeft,
+            (char)Characters.DoubleVerCrossRight,
+            (char)Characters.DoubleVerCrossDown,
+            (char)Characters.DoubleVerCrossUp,
+            (char)Characters.DoubleVerCrossMiddle,
+            (char)Characters.DarkShade,
+        };
+
+
+        static char[] BoxDrawingText = new char[] 
+        { 
+            '+',
+            '+',
+            '+',
+            '+',
+            '|',
+            '-',
+            '+',
+            '+',
+            '+',
+            '+',
+            '+',
+            '#',
+        };
+
+        static void DrawBox(char[] Elements)
+        {
+            //0┌  1┐  2└  3┘  4│  5─  6├  7┤  8┬  9┴  10┼ 11(blank)
+
+            // ┌─┬─┐
+            ConsoleEx.ScreenBuffer.Write(Elements[0]);
+            ConsoleEx.ScreenBuffer.Write(Elements[5]);
+            ConsoleEx.ScreenBuffer.Write(Elements[5]);
+            ConsoleEx.ScreenBuffer.Write(Elements[8]);
+            ConsoleEx.ScreenBuffer.Write(Elements[5]);
+            ConsoleEx.ScreenBuffer.Write(Elements[5]);
+            ConsoleEx.ScreenBuffer.Write(Elements[1]);
+            ConsoleEx.ScreenBuffer.WriteLine();
+
+            // │ │ │
+            ConsoleEx.ScreenBuffer.Write(Elements[4]);
+            ConsoleEx.ScreenBuffer.Write(Elements[11]);
+            ConsoleEx.ScreenBuffer.Write(Elements[11]);
+            ConsoleEx.ScreenBuffer.Write(Elements[4]);
+            ConsoleEx.ScreenBuffer.Write(Elements[11]);
+            ConsoleEx.ScreenBuffer.Write(Elements[11]);
+            ConsoleEx.ScreenBuffer.Write(Elements[4]);
+            ConsoleEx.ScreenBuffer.WriteLine();
+
+            // ├─┼─┤
+            ConsoleEx.ScreenBuffer.Write(Elements[6]);
+            ConsoleEx.ScreenBuffer.Write(Elements[5]);
+            ConsoleEx.ScreenBuffer.Write(Elements[5]);
+            ConsoleEx.ScreenBuffer.Write(Elements[10]);
+            ConsoleEx.ScreenBuffer.Write(Elements[5]);
+            ConsoleEx.ScreenBuffer.Write(Elements[5]);
+            ConsoleEx.ScreenBuffer.Write(Elements[7]);
+            ConsoleEx.ScreenBuffer.WriteLine();
+
+            // │ │ │
+            ConsoleEx.ScreenBuffer.Write(Elements[4]);
+            ConsoleEx.ScreenBuffer.Write(Elements[11]);
+            ConsoleEx.ScreenBuffer.Write(Elements[11]);
+            ConsoleEx.ScreenBuffer.Write(Elements[4]);
+            ConsoleEx.ScreenBuffer.Write(Elements[11]);
+            ConsoleEx.ScreenBuffer.Write(Elements[11]);
+            ConsoleEx.ScreenBuffer.Write(Elements[4]);
+            ConsoleEx.ScreenBuffer.WriteLine();
+
+            // └─┴─┘
+            ConsoleEx.ScreenBuffer.Write(Elements[2]);
+            ConsoleEx.ScreenBuffer.Write(Elements[5]);
+            ConsoleEx.ScreenBuffer.Write(Elements[5]);
+            ConsoleEx.ScreenBuffer.Write(Elements[9]);
+            ConsoleEx.ScreenBuffer.Write(Elements[5]);
+            ConsoleEx.ScreenBuffer.Write(Elements[5]);
+            ConsoleEx.ScreenBuffer.Write(Elements[3]);
+            ConsoleEx.ScreenBuffer.WriteLine();
+        }
+
         static void Main(string[] args)
         {
 
+            DrawBox(BoxDrawingSingle);
+            DrawBox(BoxDrawingDouble);
+            DrawBox(BoxDrawingDoubleHor);
+            DrawBox(BoxDrawingDoubleVer);
+            DrawBox(BoxDrawingText);
+            
             ConsoleEx.InputBuffer.LineInput = false;
             ConsoleEx.InputBuffer.ProcessedInput = false;
             ConsoleEx.InputBuffer.QuickEditMode = false;
@@ -211,7 +169,7 @@ namespace ConsoleTest
             ConsoleEx.ScreenBuffer.SetBufferSize(80, 125);
             ConsoleEx.ScreenBuffer.Clear();
             
-            WinAPI.InputRecord Event = new WinAPI.InputRecord();
+            InputRecord Event = new InputRecord();
             bool Done = false;
             do
             {
@@ -231,7 +189,7 @@ namespace ConsoleTest
                         break;
 
                     case InputRecordType.MouseEvent:
-                        if ((Event.MouseEvent.EventFlags & WinAPI.MouseEventFlags.DOUBLE_CLICK) != 0)
+                        if ((Event.MouseEvent.EventFlags & MouseEventFlags.DOUBLE_CLICK) != 0)
                             Done = true;
 
                         //ConsoleEx.ScreenBuffer.WriteLine(string.Format("{0}x{1}-{2} {3} {4}", Event.MouseEvent.MousePosition.X, Event.MouseEvent.MousePosition.Y, Event.MouseEvent.EventFlags.ToString(), Event.MouseEvent.ButtonState.ToString(), Event.MouseEvent.ControlKeyState.ToString()));

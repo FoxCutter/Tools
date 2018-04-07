@@ -22,7 +22,7 @@ namespace ConsoleLib
             FreeHandle = true;
             
             BufferHandle = WinAPI.CreateConsoleScreenBuffer(WinAPI.DesiredAccess.GENERIC_READ | WinAPI.DesiredAccess.GENERIC_WRITE, WinAPI.ShareMode.FILE_SHARE_READ | WinAPI.ShareMode.FILE_SHARE_WRITE,
-                                                            IntPtr.Zero, WinAPI.ConsoleFlags.TextModeBuffer, IntPtr.Zero);
+                                                            IntPtr.Zero, ConsoleFlags.TextModeBuffer, IntPtr.Zero);
 
             if (BufferHandle.IsInvalid)
             {
@@ -35,7 +35,7 @@ namespace ConsoleLib
         public ScreenBuffer(ScreenBuffer CloneFrom, bool CopyContents = false) : this()
         {
             Mode = CloneFrom.Mode;            
-            WinAPI.ConsoleScreenBufferInfoEx TempBufferInfo = CloneFrom.ScreenBufferInfo;
+            ConsoleScreenBufferInfoEx TempBufferInfo = CloneFrom.ScreenBufferInfo;
             
             ScreenBufferInfo = TempBufferInfo;
 
@@ -54,9 +54,9 @@ namespace ConsoleLib
                 short BufferBlockHeight = (short)(0x2000 / TempBufferInfo.BufferSize.X);
 
                 CharInfo[,] Buffer = new CharInfo[BufferBlockHeight, BufferBlockWidth];
-                WinAPI.Coord BufferSize = new WinAPI.Coord(BufferBlockWidth, BufferBlockHeight);                
-                WinAPI.Coord BufferPos = new WinAPI.Coord(0, 0);
-                WinAPI.SmallRect Region = new WinAPI.SmallRect(0, 0, BufferSize.X - 1, BufferBlockHeight - 1);
+                Coord BufferSize = new Coord(BufferBlockWidth, BufferBlockHeight);                
+                Coord BufferPos = new Coord(0, 0);
+                SmallRect Region = new SmallRect(0, 0, BufferSize.X - 1, BufferBlockHeight - 1);
 
                 while (Region.Top <= TempBufferInfo.BufferSize.Y)
                 {
@@ -178,7 +178,7 @@ namespace ConsoleLib
         {
             get
             {
-                WinAPI.Coord Size = WinAPI.GetLargestConsoleWindowSize(BufferHandle);
+                Coord Size = WinAPI.GetLargestConsoleWindowSize(BufferHandle);
 
                 return Size.Y;
             }
@@ -188,7 +188,7 @@ namespace ConsoleLib
         {
             get
             {
-                WinAPI.Coord Size = WinAPI.GetLargestConsoleWindowSize(BufferHandle);
+                Coord Size = WinAPI.GetLargestConsoleWindowSize(BufferHandle);
 
                 return Size.X;
             }
@@ -230,7 +230,7 @@ namespace ConsoleLib
             }
             set
             {
-                WinAPI.Coord Pos = ScreenBufferInfo.CursorPosition;
+                Coord Pos = ScreenBufferInfo.CursorPosition;
                 Pos.X = (short)value;
 
                 if (!WinAPI.SetConsoleCursorPosition(BufferHandle, Pos))
@@ -248,7 +248,7 @@ namespace ConsoleLib
             }
             set
             {
-                WinAPI.Coord Pos = ScreenBufferInfo.CursorPosition;
+                Coord Pos = ScreenBufferInfo.CursorPosition;
                 Pos.Y = (short)value;
 
                 if (!WinAPI.SetConsoleCursorPosition(BufferHandle, Pos))
@@ -262,7 +262,7 @@ namespace ConsoleLib
         {
             get
             {
-                WinAPI.ConsoleCursorInfo Info;
+                ConsoleCursorInfo Info;
                 if (!WinAPI.GetConsoleCursorInfo(BufferHandle, out Info))
                 {
                     throw new ConsoleExException("ConsoleEx: Unable to get cursor information.");
@@ -272,7 +272,7 @@ namespace ConsoleLib
             }
             set
             {
-                WinAPI.ConsoleCursorInfo Info;
+                ConsoleCursorInfo Info;
                 if (!WinAPI.GetConsoleCursorInfo(BufferHandle, out Info))
                 {
                     throw new ConsoleExException("ConsoleEx: Unable to get cursor information.");
@@ -290,7 +290,7 @@ namespace ConsoleLib
         {
             get
             {
-                WinAPI.ConsoleCursorInfo Info;
+                ConsoleCursorInfo Info;
                 if (!WinAPI.GetConsoleCursorInfo(BufferHandle, out Info))
                 {
                     throw new ConsoleExException("ConsoleEx: Unable to get cursor information.");
@@ -300,7 +300,7 @@ namespace ConsoleLib
             }
             set
             {
-                WinAPI.ConsoleCursorInfo Info;
+                ConsoleCursorInfo Info;
                 if (!WinAPI.GetConsoleCursorInfo(BufferHandle, out Info))
                 {
                     throw new ConsoleExException("ConsoleEx: Unable to get cursor information.");
@@ -323,7 +323,7 @@ namespace ConsoleLib
             }
             set
             {
-                WinAPI.SmallRect Size = ScreenBufferInfo.Window;
+                SmallRect Size = ScreenBufferInfo.Window;
 
                 Size.Height = value;
                 if (!WinAPI.SetConsoleWindowInfo(BufferHandle, true, ref Size))
@@ -341,7 +341,7 @@ namespace ConsoleLib
             }
             set
             {
-                WinAPI.SmallRect Size = ScreenBufferInfo.Window;
+                SmallRect Size = ScreenBufferInfo.Window;
 
                 Size.Width = value;
                 if (!WinAPI.SetConsoleWindowInfo(BufferHandle, true, ref Size))
@@ -359,7 +359,7 @@ namespace ConsoleLib
             }
             set
             {
-                WinAPI.SmallRect Size = ScreenBufferInfo.Window;
+                SmallRect Size = ScreenBufferInfo.Window;
                 int OldWidth = Size.Width;
 
                 Size.Left = (short)value;
@@ -379,7 +379,7 @@ namespace ConsoleLib
             }
             set
             {
-                WinAPI.SmallRect Size = ScreenBufferInfo.Window;
+                SmallRect Size = ScreenBufferInfo.Window;
                 int OldHeigh = Size.Height;
 
                 Size.Top = (short)value;
@@ -399,7 +399,7 @@ namespace ConsoleLib
             }
             set
             {
-                WinAPI.Coord Size = ScreenBufferInfo.BufferSize;
+                Coord Size = ScreenBufferInfo.BufferSize;
                 Size.Y = (short)value;
 
                 if (!WinAPI.SetConsoleScreenBufferSize(BufferHandle, Size))
@@ -417,7 +417,7 @@ namespace ConsoleLib
             }
             set
             {
-                WinAPI.Coord Size = ScreenBufferInfo.BufferSize;
+                Coord Size = ScreenBufferInfo.BufferSize;
                 Size.X = (short)value;
 
                 if (!WinAPI.SetConsoleScreenBufferSize(BufferHandle, Size))
@@ -427,11 +427,11 @@ namespace ConsoleLib
             }
         }
 
-        internal WinAPI.ConsoleScreenBufferInfoEx ScreenBufferInfo
+        internal ConsoleScreenBufferInfoEx ScreenBufferInfo
         {
             get
             {
-                WinAPI.ConsoleScreenBufferInfoEx Info = default(WinAPI.ConsoleScreenBufferInfoEx);
+                ConsoleScreenBufferInfoEx Info = default(ConsoleScreenBufferInfoEx);
                 Info.SetSize();
 
                 if (!WinAPI.GetConsoleScreenBufferInfoEx(BufferHandle, ref Info))
@@ -577,6 +577,18 @@ namespace ConsoleLib
             WriteLine();
         }
 
+        public void Write(Characters Data)
+        {
+            Write((char)Data);
+        }
+
+        public void WriteLine(Characters Data)
+        {
+            Write((char)Data);
+            WriteLine();
+        }
+        
+        
         public void Write(char[] Data)
         {
             uint Len;
@@ -634,7 +646,7 @@ namespace ConsoleLib
         
         public int WritePos(char Buffer, int PosLeft, int PosTop)
         {
-            WinAPI.Coord BufferPos = new WinAPI.Coord(PosLeft, PosTop);
+            Coord BufferPos = new Coord(PosLeft, PosTop);
 
             uint WriteCount;
             if (!WinAPI.WriteConsoleOutputCharacter(BufferHandle, ref Buffer, (uint)1, BufferPos, out WriteCount))
@@ -647,7 +659,7 @@ namespace ConsoleLib
 
         public int WritePos(CharacterAttribute Buffer, int PosLeft, int PosTop)
         {
-            WinAPI.Coord BufferPos = new WinAPI.Coord(PosLeft, PosTop);
+            Coord BufferPos = new Coord(PosLeft, PosTop);
 
             uint WriteCount;
             if (!WinAPI.WriteConsoleOutputAttribute(BufferHandle, ref Buffer, (uint)1, BufferPos, out WriteCount))
@@ -661,7 +673,7 @@ namespace ConsoleLib
 
         public int WritePos(char[] Buffer, int PosLeft, int PosTop)
         {
-            WinAPI.Coord BufferPos = new WinAPI.Coord(PosLeft, PosTop);
+            Coord BufferPos = new Coord(PosLeft, PosTop);
 
             uint WriteCount;
             if (!WinAPI.WriteConsoleOutputCharacter(BufferHandle, Buffer, (uint)Buffer.Length, BufferPos, out WriteCount))
@@ -674,7 +686,7 @@ namespace ConsoleLib
 
         public int WritePos(CharacterAttribute[] Buffer, int PosLeft, int PosTop)
         {
-            WinAPI.Coord BufferPos = new WinAPI.Coord(PosLeft, PosTop);
+            Coord BufferPos = new Coord(PosLeft, PosTop);
 
             uint WriteCount;
             if (!WinAPI.WriteConsoleOutputAttribute(BufferHandle, Buffer, (uint)Buffer.Length, BufferPos, out WriteCount))
@@ -693,10 +705,10 @@ namespace ConsoleLib
 
         public int WriteBlock(CharInfo[,] Buffer, int BufferOffsetX, int BufferOffsetY, int PosLeft, int PosTop, int PosRight, int PosBottom)
         {
-            WinAPI.Coord BufferSize = new WinAPI.Coord(Buffer.GetLength(1), Buffer.GetLength(0));
-            WinAPI.Coord BufferPos = new WinAPI.Coord(BufferOffsetX, BufferOffsetY);
+            Coord BufferSize = new Coord(Buffer.GetLength(1), Buffer.GetLength(0));
+            Coord BufferPos = new Coord(BufferOffsetX, BufferOffsetY);
 
-            WinAPI.SmallRect Region = new WinAPI.SmallRect(PosLeft, PosTop, PosRight, PosBottom);
+            SmallRect Region = new SmallRect(PosLeft, PosTop, PosRight, PosBottom);
 
             if (!WinAPI.WriteConsoleOutput(BufferHandle, Buffer, BufferSize, BufferPos, ref Region))
             {
@@ -723,8 +735,8 @@ namespace ConsoleLib
 
         public void MoveBufferArea(int DataLeft, int DataTop, int DataWidth, int DataHeight, int DestX, int DestY, char FillChar, ConsoleColor FillForground, ConsoleColor FillBackground)
         {
-            WinAPI.SmallRect Source = new WinAPI.SmallRect(DataLeft, DataTop, DataLeft + DataWidth - 1, DataTop + DataHeight - 1);
-            WinAPI.Coord Destination = new WinAPI.Coord(DestX, DestY);
+            SmallRect Source = new SmallRect(DataLeft, DataTop, DataLeft + DataWidth - 1, DataTop + DataHeight - 1);
+            Coord Destination = new Coord(DestX, DestY);
 
             CharInfo Fill = new CharInfo(FillChar, new CharacterAttribute(FillForground, FillBackground));
 
@@ -736,9 +748,9 @@ namespace ConsoleLib
 
         public void MoveBufferArea(System.Drawing.Rectangle DataPos, System.Drawing.Rectangle ClippingPos, System.Drawing.Point DestinationLoc, char FillChar, ConsoleColor FillForground, ConsoleColor FillBackground)
         {
-            WinAPI.SmallRect Source = new WinAPI.SmallRect(DataPos.Left, DataPos.Top, DataPos.Right, DataPos.Bottom);
-            WinAPI.SmallRect Clipping = new WinAPI.SmallRect(ClippingPos.Left, ClippingPos.Top, ClippingPos.Right, ClippingPos.Bottom);
-            WinAPI.Coord Destination = new WinAPI.Coord(DestinationLoc.X, DestinationLoc.Y);
+            SmallRect Source = new SmallRect(DataPos.Left, DataPos.Top, DataPos.Right, DataPos.Bottom);
+            SmallRect Clipping = new SmallRect(ClippingPos.Left, ClippingPos.Top, ClippingPos.Right, ClippingPos.Bottom);
+            Coord Destination = new Coord(DestinationLoc.X, DestinationLoc.Y);
 
             CharInfo Fill = new CharInfo(FillChar, new CharacterAttribute(FillForground, FillBackground));
 
@@ -766,8 +778,8 @@ namespace ConsoleLib
 
         public int ReadPos(char[] Buffer, int PosLeft, int PosTop)
         {
-            WinAPI.Coord BufferSize = new WinAPI.Coord(Buffer.GetLength(1), Buffer.GetLength(0));
-            WinAPI.Coord BufferPos = new WinAPI.Coord(PosLeft, PosTop);
+            Coord BufferSize = new Coord(Buffer.GetLength(1), Buffer.GetLength(0));
+            Coord BufferPos = new Coord(PosLeft, PosTop);
 
             uint ReadCount;
             if (!WinAPI.ReadConsoleOutputCharacter(BufferHandle, Buffer, (uint)Buffer.Length, BufferPos, out ReadCount))
@@ -780,8 +792,8 @@ namespace ConsoleLib
 
         public int ReadPos(CharacterAttribute[] Buffer, int PosLeft, int PosTop)
         {
-            WinAPI.Coord BufferSize = new WinAPI.Coord(Buffer.GetLength(1), Buffer.GetLength(0));
-            WinAPI.Coord BufferPos = new WinAPI.Coord(PosLeft, PosTop);
+            Coord BufferSize = new Coord(Buffer.GetLength(1), Buffer.GetLength(0));
+            Coord BufferPos = new Coord(PosLeft, PosTop);
 
             uint ReadCount;
             if (!WinAPI.ReadConsoleOutputAttribute(BufferHandle, Buffer, (uint)Buffer.Length, BufferPos, out ReadCount))
@@ -799,10 +811,10 @@ namespace ConsoleLib
 
         public int ReadPos(CharInfo[,] Buffer, int BufferOffsetX, int BufferOffsetY, int PosLeft, int PosTop, int PosRight, int PosBottom)
         {
-            WinAPI.Coord BufferSize = new WinAPI.Coord(Buffer.GetLength(1), Buffer.GetLength(0));
-            WinAPI.Coord BufferPos = new WinAPI.Coord(BufferOffsetX, BufferOffsetY);
+            Coord BufferSize = new Coord(Buffer.GetLength(1), Buffer.GetLength(0));
+            Coord BufferPos = new Coord(BufferOffsetX, BufferOffsetY);
 
-            WinAPI.SmallRect Region = new WinAPI.SmallRect(PosLeft, PosTop, PosRight, PosBottom);
+            SmallRect Region = new SmallRect(PosLeft, PosTop, PosRight, PosBottom);
 
             if (!WinAPI.ReadConsoleOutput(BufferHandle, Buffer, BufferSize, BufferPos, ref Region))
             {
@@ -818,7 +830,7 @@ namespace ConsoleLib
 
         public void Clear()
         {
-            WinAPI.Coord Pos = new WinAPI.Coord(0, 0);
+            Coord Pos = new Coord(0, 0);
 
             uint FillTotal = (uint)(BufferHeight * BufferWidth);
             uint FillOutput = 0;
@@ -830,7 +842,7 @@ namespace ConsoleLib
 
         public void SetBufferSize(int width, int height)
         {
-            WinAPI.Coord Size = new WinAPI.Coord(width, height);
+            Coord Size = new Coord(width, height);
 
             if (!WinAPI.SetConsoleScreenBufferSize(BufferHandle, Size))
             {
@@ -840,7 +852,7 @@ namespace ConsoleLib
 
         public void SetCursorPosition(int left, int top)
         {
-            WinAPI.Coord Pos = new WinAPI.Coord(left, top);
+            Coord Pos = new Coord(left, top);
 
             if (!WinAPI.SetConsoleCursorPosition(BufferHandle, Pos))
             {
@@ -850,7 +862,7 @@ namespace ConsoleLib
 
         public void SetWindowPosition(int left, int top)
         {
-            WinAPI.SmallRect NewWindow = ScreenBufferInfo.Window;
+            SmallRect NewWindow = ScreenBufferInfo.Window;
 
             int OldWidth = NewWindow.Width;
             int OldHeight = NewWindow.Height;
@@ -869,7 +881,7 @@ namespace ConsoleLib
 
         public void SetWindowSize(int width, int height)
         {
-            WinAPI.SmallRect NewWindow = ScreenBufferInfo.Window;
+            SmallRect NewWindow = ScreenBufferInfo.Window;
 
             NewWindow.Height = height;
             NewWindow.Width = width;
@@ -902,7 +914,7 @@ namespace ConsoleLib
         
         public void SetColorTable(List<System.Drawing.Color> Colors)
         {
-            WinAPI.ConsoleScreenBufferInfoEx Temp = ScreenBufferInfo;
+            ConsoleScreenBufferInfoEx Temp = ScreenBufferInfo;
             for (int x = 0; x < Temp.ColorTable.Length && x < Colors.Count; x++)
             {
                 Temp.ColorTable[x] = (uint)Colors[x].ToArgb();

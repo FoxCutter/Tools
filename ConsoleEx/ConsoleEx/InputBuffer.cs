@@ -9,7 +9,7 @@ namespace ConsoleLib
         Microsoft.Win32.SafeHandles.SafeFileHandle BufferHandle;
         bool FreeHandle;
         System.IO.TextReader InputStream = null;
-        WinAPI.KeyEventRecord SavedKey = new WinAPI.KeyEventRecord();
+        KeyEventRecord SavedKey = new KeyEventRecord();
 
         public InputBuffer(Microsoft.Win32.SafeHandles.SafeFileHandle Handle)
         {
@@ -297,9 +297,9 @@ namespace ConsoleLib
             if (PendingEventCount == 0)
                 return false;
 
-            WinAPI.InputRecord[] Events = PeekPendingEvents();
+            InputRecord[] Events = PeekPendingEvents();
 
-            foreach (WinAPI.InputRecord Event in Events)
+            foreach (InputRecord Event in Events)
             {
                 if ((InputRecordType)Event.EventType == EventType)
                 {
@@ -311,17 +311,17 @@ namespace ConsoleLib
             return false;
         }
         
-        public WinAPI.InputRecord[] PeekPendingEvents()
+        public InputRecord[] PeekPendingEvents()
         {
             return PeekPendingEvents(PendingEventCount);
         }
         
-        public WinAPI.InputRecord[] PeekPendingEvents(int Max)
+        public InputRecord[] PeekPendingEvents(int Max)
         {
             if(Max == 0)
                 return null;
 
-            WinAPI.InputRecord[] EventList = new WinAPI.InputRecord[Max];
+            InputRecord[] EventList = new InputRecord[Max];
 
             uint ReadCount;
             if (!WinAPI.PeekConsoleInput(BufferHandle, EventList, (uint)Max, out ReadCount))
@@ -331,7 +331,7 @@ namespace ConsoleLib
 
             if (ReadCount < Max)
             {
-                WinAPI.InputRecord[] NewList = new WinAPI.InputRecord[ReadCount];
+                InputRecord[] NewList = new InputRecord[ReadCount];
                 Array.Copy(EventList, NewList, ReadCount);
                 EventList = NewList;
             }
@@ -339,17 +339,17 @@ namespace ConsoleLib
             return EventList;
         }
 
-        public WinAPI.InputRecord[] ReadPendingEvents()
+        public InputRecord[] ReadPendingEvents()
         {
             return ReadPendingEvents(PendingEventCount);
         }
 
-        public WinAPI.InputRecord[] ReadPendingEvents(int Max)
+        public InputRecord[] ReadPendingEvents(int Max)
         {
             if (Max == 0)
                 return null;
 
-            WinAPI.InputRecord[] EventList = new WinAPI.InputRecord[Max];
+            InputRecord[] EventList = new InputRecord[Max];
 
             uint ReadCount;
             if (!WinAPI.ReadConsoleInput(BufferHandle, EventList, (uint)Max, out ReadCount))
@@ -359,7 +359,7 @@ namespace ConsoleLib
 
             if (ReadCount < Max)
             {
-                WinAPI.InputRecord[] NewList = new WinAPI.InputRecord[ReadCount];
+                InputRecord[] NewList = new InputRecord[ReadCount];
                 Array.Copy(EventList, NewList, ReadCount);
                 EventList = NewList;
             }
@@ -367,11 +367,11 @@ namespace ConsoleLib
             return EventList;
         }
 
-        public WinAPI.InputRecord NextEvent(InputRecordType Filter = InputRecordType.All)
+        public InputRecord NextEvent(InputRecordType Filter = InputRecordType.All)
         {
             while (true)
             {
-                WinAPI.InputRecord[] EventList = ReadPendingEvents(1);
+                InputRecord[] EventList = ReadPendingEvents(1);
                 if (EventList == null)
                     continue;
 
@@ -382,9 +382,9 @@ namespace ConsoleLib
             }
         }
 
-        public WinAPI.InputRecord PeekNextEvent(bool Remove = false)
+        public InputRecord PeekNextEvent(bool Remove = false)
         {
-            WinAPI.InputRecord[] EventList;
+            InputRecord[] EventList;
 
             while (true)
             {
@@ -402,11 +402,11 @@ namespace ConsoleLib
                 return EventList[0];
             }
 
-            return default(WinAPI.InputRecord);
+            return default(InputRecord);
         }
         
         
-        public int WritePendingEvents(WinAPI.InputRecord[] Events)
+        public int WritePendingEvents(InputRecord[] Events)
         {
             if (Events == null || Events.Length == 0)
                 return 0;
@@ -425,7 +425,7 @@ namespace ConsoleLib
         #region Read functions
         public ConsoleKeyInfo ReadKey(bool intercept)
         {
-            WinAPI.KeyEventRecord KeyEvent = new WinAPI.KeyEventRecord();
+            KeyEventRecord KeyEvent = new KeyEventRecord();
 
             if (SavedKey.RepeatCount != 0)
             {
@@ -450,9 +450,9 @@ namespace ConsoleLib
             if (!intercept)
                 ConsoleEx.ScreenBuffer.Write(KeyEvent.Character);
             
-            bool Shift = (KeyEvent.ControlKeyState & WinAPI.CtrlKeyState.SHIFT_PRESSED) != 0;
-            bool Ctrl = (KeyEvent.ControlKeyState & (WinAPI.CtrlKeyState.LEFT_CTRL_PRESSED | WinAPI.CtrlKeyState.RIGHT_CTRL_PRESSED)) != 0;
-            bool Alt = (KeyEvent.ControlKeyState & (WinAPI.CtrlKeyState.LEFT_ALT_PRESSED | WinAPI.CtrlKeyState.RIGHT_ALT_PRESSED)) != 0;
+            bool Shift = (KeyEvent.ControlKeyState & CtrlKeyState.SHIFT_PRESSED) != 0;
+            bool Ctrl = (KeyEvent.ControlKeyState & (CtrlKeyState.LEFT_CTRL_PRESSED | CtrlKeyState.RIGHT_CTRL_PRESSED)) != 0;
+            bool Alt = (KeyEvent.ControlKeyState & (CtrlKeyState.LEFT_ALT_PRESSED | CtrlKeyState.RIGHT_ALT_PRESSED)) != 0;
 
             return new ConsoleKeyInfo(KeyEvent.Character, (ConsoleKey)KeyEvent.VirtualKeyCode, Shift, Alt, Ctrl);
         }
@@ -464,7 +464,7 @@ namespace ConsoleLib
             return Info;
         }
 
-        public WinAPI.KeyEventRecord ReadKeyEvent()
+        public KeyEventRecord ReadKeyEvent()
         {
             return NextEvent(InputRecordType.KeyEvent).KeyEvent;
         }
@@ -524,7 +524,7 @@ namespace ConsoleLib
         #endregion
 
         // Returs true if the value of Key.Character can be displayed.
-        public bool CanDisplay(WinAPI.KeyEventRecord Key)
+        public bool CanDisplay(KeyEventRecord Key)
         {
             bool AltKey = Key.VirtualKeyCode == 0x12;
             bool CtrlKey = Key.VirtualKeyCode == 0x11;

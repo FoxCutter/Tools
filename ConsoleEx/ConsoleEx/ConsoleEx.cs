@@ -36,7 +36,7 @@ namespace ConsoleLib
         static System.IO.TextWriter StdOutputStream = null;
 
 
-        static WinAPI.CtrlHandlerRoutine CancelKeyPress = null;
+        static CtrlHandlerRoutine CancelKeyPress = null;
         
         static ConsoleEx()
         {
@@ -258,7 +258,7 @@ namespace ConsoleLib
         static void AttachCtrlHandler()
         {
             if (CancelKeyPress == null)
-                CancelKeyPress = new WinAPI.CtrlHandlerRoutine(CtrlHandlerFunction);
+                CancelKeyPress = new CtrlHandlerRoutine(CtrlHandlerFunction);
 
             if (!WinAPI.SetConsoleCtrlHandler(CancelKeyPress, true))
             {
@@ -408,11 +408,11 @@ namespace ConsoleLib
             }
         }
 
-        public static WinAPI.ConsoleSelectionInfo ConsoleSelectionInfo
+        public static ConsoleSelectionInfo ConsoleSelectionInfo
         {
             get
             {
-                WinAPI.ConsoleSelectionInfo Info;
+                ConsoleSelectionInfo Info;
                 if (!WinAPI.GetConsoleSelectionInfo(out Info))
                 {
                     throw new ConsoleExException("ConsoleEx: Unable to set console info.");
@@ -423,10 +423,10 @@ namespace ConsoleLib
 
         static public Microsoft.Win32.SafeHandles.SafeFileHandle StdInput
         {
-            get { return GetStdHandle(WinAPI.StdHandleType.STD_INPUT_HANDLE); }
+            get { return GetStdHandle(StdHandleType.STD_INPUT_HANDLE); }
             set
             {
-                if (!WinAPI.SetStdHandle(WinAPI.StdHandleType.STD_INPUT_HANDLE, value))
+                if (!WinAPI.SetStdHandle(StdHandleType.STD_INPUT_HANDLE, value))
                 {
                     throw new ConsoleExException("ConsoleEx: Unable to set standard input.");
                 }
@@ -437,10 +437,10 @@ namespace ConsoleLib
 
         static public Microsoft.Win32.SafeHandles.SafeFileHandle StdOutput
         {
-            get { return GetStdHandle(WinAPI.StdHandleType.STD_OUTPUT_HANDLE); }
+            get { return GetStdHandle(StdHandleType.STD_OUTPUT_HANDLE); }
             set
             {
-                if (!WinAPI.SetStdHandle(WinAPI.StdHandleType.STD_OUTPUT_HANDLE, value))
+                if (!WinAPI.SetStdHandle(StdHandleType.STD_OUTPUT_HANDLE, value))
                 {
                     throw new ConsoleExException("ConsoleEx: Unable to set standard output.");
                 }
@@ -451,10 +451,10 @@ namespace ConsoleLib
 
         static public Microsoft.Win32.SafeHandles.SafeFileHandle StdError
         {
-            get { return GetStdHandle(WinAPI.StdHandleType.STD_ERROR_HANDLE); }
+            get { return GetStdHandle(StdHandleType.STD_ERROR_HANDLE); }
             set
             {
-                if (!WinAPI.SetStdHandle(WinAPI.StdHandleType.STD_ERROR_HANDLE, value))
+                if (!WinAPI.SetStdHandle(StdHandleType.STD_ERROR_HANDLE, value))
                 {
                     throw new ConsoleExException("ConsoleEx: Unable to set standard error.");
                 }
@@ -589,17 +589,17 @@ namespace ConsoleLib
 
         internal static IntPtr RawStdInput
         {
-            get { return WinAPI.GetStdHandle(WinAPI.StdHandleType.STD_INPUT_HANDLE); }
+            get { return WinAPI.GetStdHandle(StdHandleType.STD_INPUT_HANDLE); }
         }
 
         internal static IntPtr RawStdOutput
         {
-            get { return WinAPI.GetStdHandle(WinAPI.StdHandleType.STD_OUTPUT_HANDLE); }
+            get { return WinAPI.GetStdHandle(StdHandleType.STD_OUTPUT_HANDLE); }
         }
 
         internal static IntPtr RawStdError
         {
-            get { return WinAPI.GetStdHandle(WinAPI.StdHandleType.STD_ERROR_HANDLE); }
+            get { return WinAPI.GetStdHandle(StdHandleType.STD_ERROR_HANDLE); }
         }
         
         public static bool IsInputRedirected
@@ -649,7 +649,7 @@ namespace ConsoleLib
         }
         #endregion
 
-        internal static Microsoft.Win32.SafeHandles.SafeFileHandle GetStdHandle(WinAPI.StdHandleType StdHandle)
+        internal static Microsoft.Win32.SafeHandles.SafeFileHandle GetStdHandle(StdHandleType StdHandle)
         {
             return new Microsoft.Win32.SafeHandles.SafeFileHandle(WinAPI.GetStdHandle(StdHandle), false);
         }
