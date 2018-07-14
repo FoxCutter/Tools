@@ -45,6 +45,9 @@
     <Compile Include="ScreenBuffer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ConsoleEnumerations.cs" />
+    <Compile Include="TerminalEmulator.cs" />
+    <Compile Include="TerminalInputBuffer.cs" />
+    <Compile Include="TerminalScreenBuffer.cs" />
     <Compile Include="WinAPI.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

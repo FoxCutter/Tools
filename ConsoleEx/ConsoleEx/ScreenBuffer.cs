@@ -557,12 +557,12 @@ namespace ConsoleLib
 
         #region Output Functions
 
-        public void WriteLine()
+        public virtual void WriteLine()
         {
             Write("\r\n");
         }
 
-        public void Write(char Data)
+        public virtual void Write(char Data)
         {
             uint Len;
             if (!WinAPI.WriteConsole(BufferHandle, Data.ToString(), 1, out Len, IntPtr.Zero))
@@ -587,9 +587,9 @@ namespace ConsoleLib
             Write((char)Data);
             WriteLine();
         }
-        
-        
-        public void Write(char[] Data)
+
+
+        public virtual void Write(char[] Data)
         {
             uint Len;
             if (!WinAPI.WriteConsole(BufferHandle, Data, (uint)Data.Length, out Len, IntPtr.Zero))
@@ -604,7 +604,7 @@ namespace ConsoleLib
             WriteLine();
         }
 
-        public void Write(string Data)
+        public virtual void Write(string Data)
         {
             uint Len;
             if (!WinAPI.WriteConsole(BufferHandle, Data, (uint)Data.Length, out Len, IntPtr.Zero))
@@ -643,8 +643,8 @@ namespace ConsoleLib
         }
 
         //---------------------------------------------------
-        
-        public int WritePos(char Buffer, int PosLeft, int PosTop)
+
+        public virtual int WritePos(char Buffer, int PosLeft, int PosTop)
         {
             Coord BufferPos = new Coord(PosLeft, PosTop);
 
@@ -657,7 +657,7 @@ namespace ConsoleLib
             return (int)WriteCount;
         }
 
-        public int WritePos(CharacterAttribute Buffer, int PosLeft, int PosTop)
+        public virtual int WritePos(CharacterAttribute Buffer, int PosLeft, int PosTop)
         {
             Coord BufferPos = new Coord(PosLeft, PosTop);
 
@@ -671,7 +671,7 @@ namespace ConsoleLib
 
         }
 
-        public int WritePos(char[] Buffer, int PosLeft, int PosTop)
+        public virtual int WritePos(char[] Buffer, int PosLeft, int PosTop)
         {
             Coord BufferPos = new Coord(PosLeft, PosTop);
 
@@ -684,7 +684,7 @@ namespace ConsoleLib
             return (int)WriteCount;
         }
 
-        public int WritePos(CharacterAttribute[] Buffer, int PosLeft, int PosTop)
+        public virtual int WritePos(CharacterAttribute[] Buffer, int PosLeft, int PosTop)
         {
             Coord BufferPos = new Coord(PosLeft, PosTop);
 
@@ -703,7 +703,7 @@ namespace ConsoleLib
             return WriteBlock(Buffer, 0, 0, PosLeft, PosTop, PosLeft + Buffer.GetLength(1) - 1, PosTop + Buffer.GetLength(0) - 1);
         }
 
-        public int WriteBlock(CharInfo[,] Buffer, int BufferOffsetX, int BufferOffsetY, int PosLeft, int PosTop, int PosRight, int PosBottom)
+        public virtual int WriteBlock(CharInfo[,] Buffer, int BufferOffsetX, int BufferOffsetY, int PosLeft, int PosTop, int PosRight, int PosBottom)
         {
             Coord BufferSize = new Coord(Buffer.GetLength(1), Buffer.GetLength(0));
             Coord BufferPos = new Coord(BufferOffsetX, BufferOffsetY);
@@ -828,7 +828,7 @@ namespace ConsoleLib
 
         #region Utitily Functions
 
-        public void Clear()
+        public void Clear(bool ResetCusor = true)
         {
             Coord Pos = new Coord(0, 0);
 
@@ -836,8 +836,11 @@ namespace ConsoleLib
             uint FillOutput = 0;
             WinAPI.FillConsoleOutputCharacter(BufferHandle, ' ', FillTotal, Pos, out FillOutput);
             WinAPI.FillConsoleOutputAttribute(BufferHandle, Attribute.Value, FillTotal, Pos, out FillOutput);
-            SetCursorPosition(0, 0);
-            SetWindowPosition(0, 0);
+            if (ResetCusor)
+            {
+                SetCursorPosition(0, 0);
+                SetWindowPosition(0, 0);
+            }
         }
 
         public void SetBufferSize(int width, int height)

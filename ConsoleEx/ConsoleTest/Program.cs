@@ -4,14 +4,67 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ConsoleLib;
-
-using System.Runtime.InteropServices;
-
+using System.IO;
 
 namespace ConsoleTest
 {
+    struct TTYFrame
+    {
+        public int Seconds;
+        public int uSeconds;
+        public int Length;
+        public char[] FrameData;
+    }
+    
     class Program
     {
+        static void Main(string[] args)
+        {
+            FileStream InputStream = File.Open(@"..\..\2012-10-29.07_59_36.ttyrec", FileMode.Open, FileAccess.Read);
+            BinaryReader Input = new BinaryReader(InputStream, Encoding.ASCII);
+
+            ConsoleEx.ScreenBuffer.WriteLine("Filling out a line");
+            ConsoleEx.ScreenBuffer.WriteLine("Filling out a line");
+            ConsoleEx.ScreenBuffer.Write("Filling...");
+            ConsoleEx.ScreenBuffer.CursorSize = 100;
+            
+            ConsoleEx.ScreenBuffer.ProcessedOutput = true;
+            ConsoleEx.ScreenBuffer.WrapAtEOL = true;
+            TerminalEmulator Term = new TerminalEmulator();
+
+            int Frame = 1;
+
+            while (true)
+            {
+                TTYFrame CurrentFrame = ReadFrame(Input);
+                if (CurrentFrame.Seconds == 0)
+                    break;
+
+                //ConsoleEx.ScreenBuffer.WriteLine("{0}: {1}-{2} {3}", Frame, CurrentFrame.Seconds, CurrentFrame.uSeconds, CurrentFrame.Length);
+                Frame++;
+                
+                ConsoleEx.ScreenBuffer.Write(CurrentFrame.FrameData);
+            }
+        }
+
+        static TTYFrame ReadFrame(BinaryReader Input)
+        {
+            TTYFrame Ret = new TTYFrame();
+            
+            if (Input.BaseStream.Position == Input.BaseStream.Length)
+                return Ret;
+
+            Ret.Seconds = Input.ReadInt32();
+            Ret.uSeconds = Input.ReadInt32();
+            Ret.Length = Input.ReadInt32();
+
+            Ret.FrameData = Input.ReadChars(Ret.Length);
+
+            return Ret;
+        }
+        
+        
+        /*
         static char[] BoxDrawingSingle = new char[] 
         { 
             (char)Characters.UpperLeft,
@@ -249,7 +302,7 @@ namespace ConsoleTest
             ////var old = ConsoleEx.SwapBuffers(NewBuffer);
             ////ConsoleEx.StdOutput = NewBuffer.Handle;
             //Console.Out.Write("123456789...");
-            
+
             //ConsoleEx.ScreenBuffer.MoveBufferArea(3, 1, 50, 4, 10, 10, '!', ConsoleColor.White, ConsoleColor.Cyan);
             ////ConsoleEx.ScreenBuffer.MoveBufferArea(new System.Drawing.Rectangle (3, 1, 40, 5), new System.Drawing.Rectangle (0, 0, 80, 25), new System.Drawing.Point(10, 10), '!', ConsoleColor.White, ConsoleColor.Cyan);
             //ConsoleEx.ScreenBuffer.Scroll(4);
@@ -292,5 +345,6 @@ namespace ConsoleTest
 
 
         }
+         */
     }
 }

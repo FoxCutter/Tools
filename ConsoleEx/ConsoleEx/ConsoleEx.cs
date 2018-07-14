@@ -26,10 +26,10 @@ namespace ConsoleLib
         #endregion
 
         // Direct access to the Input Buffer ignoring redirection
-        static public InputBuffer InputBuffer { get; private set; }
+        static public InputBuffer InputBuffer { get; internal set; }
 
         // Direct access to the Output Buffer ignoring redirection
-        static public ScreenBuffer ScreenBuffer { get; private set; }
+        static public ScreenBuffer ScreenBuffer { get; internal set; }
 
         static System.IO.TextReader StdInputStream = null;
         static System.IO.TextWriter StdErrorStream = null;
