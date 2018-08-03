@@ -20,31 +20,49 @@ namespace ConsoleTest
     {
         static void Main(string[] args)
         {
-            FileStream InputStream = File.Open(@"..\..\2012-10-29.07_59_36.ttyrec", FileMode.Open, FileAccess.Read);
-            BinaryReader Input = new BinaryReader(InputStream, Encoding.ASCII);
-
-            ConsoleEx.ScreenBuffer.WriteLine("Filling out a line");
-            ConsoleEx.ScreenBuffer.WriteLine("Filling out a line");
-            ConsoleEx.ScreenBuffer.Write("Filling...");
-            ConsoleEx.ScreenBuffer.CursorSize = 100;
+            ConsoleEx.ScreenBuffer.SetWindowSize(80, 24);
+            //ConsoleEx.ScreenBuffer.SetCursorPosition(0, ConsoleEx.ScreenBuffer.BufferHeight - ConsoleEx.ScreenBuffer.WindowHeight);
+            //ConsoleEx.ScreenBuffer.SetWindowPosition(0, ConsoleEx.ScreenBuffer.CursorTop);
             
-            ConsoleEx.ScreenBuffer.ProcessedOutput = true;
-            ConsoleEx.ScreenBuffer.WrapAtEOL = true;
+            //for(int x = 0; x < 50; x++)
+            //    ConsoleEx.ScreenBuffer.WriteLine("Filling out a line");
+            //ConsoleEx.ScreenBuffer.WriteLine("Filling out a line");
+            //ConsoleEx.ScreenBuffer.Write("\bFilling...123");
+            //ConsoleEx.ScreenBuffer.WriteLine();
+
             TerminalEmulator Term = new TerminalEmulator();
 
-            int Frame = 1;
+            ConsoleEx.ScreenBuffer.Write("\x01\x1b[A\x1b[100CFilling...123");
 
-            while (true)
+            FileStream InputStream = File.Open(@"d:\putty2.log", FileMode.Open, FileAccess.Read);
+            StreamReader Input = new StreamReader(InputStream, Encoding.ASCII);
+
+
+            while (!Input.EndOfStream)
             {
-                TTYFrame CurrentFrame = ReadFrame(Input);
-                if (CurrentFrame.Seconds == 0)
-                    break;
-
-                //ConsoleEx.ScreenBuffer.WriteLine("{0}: {1}-{2} {3}", Frame, CurrentFrame.Seconds, CurrentFrame.uSeconds, CurrentFrame.Length);
-                Frame++;
-                
-                ConsoleEx.ScreenBuffer.Write(CurrentFrame.FrameData);
+                string Temp = Input.ReadLine();
+                ConsoleEx.ScreenBuffer.Write(Temp);
+                ConsoleEx.ScreenBuffer.Write('\r');
             }
+
+
+            //int Frame = 1;
+
+            //FileStream InputStream = File.Open(@"..\..\2012-10-29.07_59_36.ttyrec", FileMode.Open, FileAccess.Read);
+            //BinaryReader Input = new BinaryReader(InputStream, Encoding.ASCII);
+
+            //while (true)
+            //{
+            //    TTYFrame CurrentFrame = ReadFrame(Input);
+            //    if (CurrentFrame.Seconds == 0)
+            //        break;
+
+            //    //ConsoleEx.ScreenBuffer.WriteLine("{0}: {1}-{2} {3}", Frame, CurrentFrame.Seconds, CurrentFrame.uSeconds, CurrentFrame.Length);
+            //    Frame++;
+
+            //    ConsoleEx.ScreenBuffer.Write(CurrentFrame.FrameData);
+            //}
+            //Frame++;
         }
 
         static TTYFrame ReadFrame(BinaryReader Input)

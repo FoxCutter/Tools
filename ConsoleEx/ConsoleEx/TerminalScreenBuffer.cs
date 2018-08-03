@@ -10,38 +10,38 @@ namespace ConsoleLib
     {
         char[] DECLineDrawing = new char[] 
         { 
-            (char)Characters.NonBreakSpace,
-            (char)0x25C6,
-            (char)0x2592,
-            (char)0x2409,
-            (char)0x240C,
-            (char)0x240D,
-            (char)0x240A,
-            (char)Characters.Degree,
-            (char)Characters.PlusMinus,
-            (char)0x2424,
-            (char)0x240B,
-            (char)Characters.LowerRight,
-            (char)Characters.UpperRight,
-            (char)Characters.UpperLeft,
-            (char)Characters.LowerLeft,
-            (char)Characters.CrossMiddle,
-            (char)0x23BA,
-            (char)0x23BB,
-            (char)Characters.Horizontal,
-            (char)0x23BC,
-            (char)0x23BD,
-            (char)Characters.CrossLeft,
-            (char)Characters.CrossRight,
-            (char)Characters.CrossUp,
-            (char)Characters.CrossDown,
-            (char)Characters.Vertical,
-            (char)Characters.LessThenEqual,
-            (char)Characters.GreaterThenEqual,
-            (char)Characters.Pi,
-            (char)0x2260,
-            (char)Characters.Pound,
-            (char)Characters.MiddleDot,
+            (char)Characters.NonBreakSpace,     // 5F
+            (char)Characters.BlackDimond,       // 60
+            (char)Characters.MediumShade,       // 61
+            (char)Characters.SymbolHT,          // 62
+            (char)Characters.SymbolFF,          // 63
+            (char)Characters.SymbolCR,          // 64  
+            (char)Characters.SymbolLF,          // 65
+            (char)Characters.Degree,            // 66
+            (char)Characters.PlusMinus,         // 67
+            (char)Characters.SymbolNL,          // 68
+            (char)Characters.SymbolVT,          // 69
+            (char)Characters.LowerRight,        // 6A
+            (char)Characters.UpperRight,        // 6B
+            (char)Characters.UpperLeft,         // 6C   
+            (char)Characters.LowerLeft,         // 6D
+            (char)Characters.CrossMiddle,       // 6E
+            (char)Characters.ScanLine1,         // 6F
+            (char)Characters.ScanLine3,         // 70
+            (char)Characters.Horizontal,        // 71
+            (char)Characters.ScanLine7,         // 72
+            (char)Characters.ScanLine9,         // 73
+            (char)Characters.CrossLeft,         // 74
+            (char)Characters.CrossRight,        // 75
+            (char)Characters.CrossUp,           // 76
+            (char)Characters.CrossDown,         // 77
+            (char)Characters.Vertical,          // 78
+            (char)Characters.LessThenEqual,     // 79
+            (char)Characters.GreaterThenEqual,  // 7A
+            (char)Characters.Pi,                // 7B
+            (char)Characters.NotEqual,          // 7C
+            (char)Characters.Pound,             // 7D
+            (char)Characters.MiddleDot,         // 7E
         };
         
         enum State
@@ -97,52 +97,43 @@ namespace ConsoleLib
         public override void Write(char Data)        
         {
             EscapeData.Add(Data);
-
-
+            
             if (CurrentState == State.Data)
             {
                 switch (Data)
                 {
-                    case (char)Characters.BS:
-                        if (this.CursorLeft == 0)
-                        {
-                            if (this.CursorTop != 0)
-                            {
-                                this.CursorTop--;
-                                this.CursorLeft = this.BufferWidth - 1;
-                            }
-                        }
-                        else
-                        {
-                            this.CursorLeft--;
-                        }
+                    case (char)Characters.ENQ:  // Return Terminal Status (Ctrl-E)
                         break;
 
-                    case (char)Characters.BEL:
+                    case (char)Characters.BS:   // Backspace (Ctrl-H)
+                        CursorBackward(1);
                         break;
-                    
-                    case (char)Characters.CR:
+
+                    case (char)Characters.BEL:  // Bell (Ctrl-G)
+                        break;
+
+                    case (char)Characters.CR:   // Carriage Return (Ctrl-M)
                         this.CursorLeft = 0;
                         break;
 
-                    case (char)Characters.FF:
-                    case (char)Characters.LF:
-                    case (char)Characters.VT:
+                    case (char)Characters.FF:   // Form Feed or New Page (NP)
+                    case (char)Characters.LF:   // Line Feed or New Line (NL)
+                    case (char)Characters.VT:   // Vertical Tab (Ctrl-K)
                         if (this.CursorTop == this.BufferHeight - 1)
                             this.Scroll(1);
                         else
                             this.CursorTop++;
                         break;
 
-                    case (char)Characters.SI:
+                    case (char)Characters.SI:   // Shift In (Ctrl-O)
                         CharacterSet = 0;
                         break;
 
-                    case (char)Characters.SO:
+                    case (char)Characters.SO:   // Shift Out (Ctrl-N)
                         CharacterSet = 1;
                         break;
 
-                    case (char)Characters.HT:
+                    case (char)Characters.HT:   // Horizontal Tab (HT)
                         break;
 
                     case (char)Characters.ESC:
@@ -154,6 +145,16 @@ namespace ConsoleLib
                         break;
 
                     default:
+                        if (this.CursorLeft == this.BufferWidth - 1)
+                        {
+                            if (this.CursorTop == this.BufferHeight - 1)
+                                this.Scroll(1);
+                            else
+                                this.CursorTop++;
+
+                            this.CursorLeft = 0;
+                        }
+                        
                         if (BaseTerminal.CharacterSets[CharacterSet] == TerminalEmulator.CharacterSet.DECLineDrawing)
                         {
                             if(Data >= 0x5F && Data <= 0x7E)
@@ -261,13 +262,12 @@ namespace ConsoleLib
 
                     ProcessingCSI(Params, SavedData, Data);
                     CurrentState = State.Data;
-                    EscapeData.Clear();
                 }
             }
             else if (CurrentState == State.OSC)
             {
                 // OSC ends with a BEL or a string terminator escape sequence.
-                if (Data == 0x07 || (SavedData.Last() == 0x1B && Data == '\\'))
+                if (Data == 0x07 || (SavedData.LastOrDefault() == 0x1B && Data == '\\'))
                 {
                     CurrentState = State.Data;
                 }
@@ -290,7 +290,7 @@ namespace ConsoleLib
         {
             switch (EscapeCode)
             {
-                case '(':
+                case '(':   // SCS – Select Character Set - G0
                     if (Closing == '0')
                         BaseTerminal.CharacterSets[0] = TerminalEmulator.CharacterSet.DECLineDrawing;
 
@@ -298,8 +298,7 @@ namespace ConsoleLib
                         BaseTerminal.CharacterSets[0] = TerminalEmulator.CharacterSet.USASCII;
                     break;
 
-                case '-':
-                case ')':
+                case ')':   // SCS – Select Character Set - G1
                     if (Closing == '0')
                         BaseTerminal.CharacterSets[1] = TerminalEmulator.CharacterSet.DECLineDrawing;
 
@@ -316,38 +315,99 @@ namespace ConsoleLib
         {
             switch (Code)
             {
-                case '7':
-                    SavedCursorTop = this.CursorTop;
-                    SavedCursorLeft = this.CursorLeft;
+                case '7':   // DECSC – Save Cursor                    
+                    SavedCursorTop = this.CursorTop - this.WindowTop;
+                    SavedCursorLeft = this.CursorLeft - this.WindowLeft;
                     break;
 
-                case '8':
+                case '8':   // DECRC – Restore Cursor                     
                     this.SetCursorPosition(SavedCursorLeft, SavedCursorTop);
                     break;
 
-                case '=':
+                case '=':   // DECKPAM – Keypad Application Mode                    
                     BaseTerminal.Keypad = TerminalEmulator.InputMode.Application;
                     break;
-                case '>':
+
+                case '>':   // DECKPNM – Keypad Numeric Mode                    
                     BaseTerminal.Keypad = TerminalEmulator.InputMode.Normal;
                     break;
 
-                //case 'A':
+                case 'A': // VT52 - Cursor up
+                    CursorUp(1);
+                    break;
+
+                case 'B': // VT52 - Cursor Down
+                    CursorDown(1);
+                    break;
+
+                case 'C': // VT52 - Cursor Right.
+                    CursorForward(1);
+                    break;
+
+                case 'D': // VT52 - Cursor Left.
+                    CursorBackward(1);
+                    break;
+
+                //case 'D':   // IND – Index
+                    //{
+                    //    if (this.CursorTop == this.BufferHeight - 1)
+                    //    {
+                    //        this.Scroll(1);
+                    //    }
+                    //    else
+                    //    {
+                    //        this.CursorTop++;
+                    //    }
+                    //}
+                    //break;
+
+                //case 'E': // NEL – Next Line
+                //    {
+                //        if (this.CursorTop == this.BufferHeight - 1)
+                //        {
+                //            this.Scroll(1);
+                //        }
+                //        else
+                //        {
+                //            this.CursorTop++;
+                //        }
+
+                //        this.CursorLeft = 0;
+                //    }
                 //    break;
-                //case 'B':
-                //    break;
-                //case 'C':
-                //    break;
-                //case 'D':
-                //    break;
-                //case 'E':
-                //    break;
+
+
                 //case 'F':
                 //    break;
-                //case 'H':
+                //case 'G':
                 //    break;
-                //case 'M':
-                //    break;
+
+                case 'H':   // VT52 - Move the cursor to the home position
+                    SetCursor(1, 1);
+                    break;
+
+                case 'I':   // VT52 - Reverse Line Feed
+                case 'M':   // RI – Reverse Index
+                    {
+                        if (this.CursorTop == 0)
+                        {
+                            this.Scroll(-1);
+                        }
+                        else
+                        {
+                            this.CursorTop--;
+                        }
+                    }
+                    break;
+
+                case 'J':   // VT52 - Erase from the cursor to the end of the screen
+                    EraseInDisplay(0);
+                    break;
+
+                case 'K':   // VT52 - Erase from the cursor to the end of the line.
+                    EraseInLine(0);
+                    break;
+
                 //case 'N':
                 //    break;
                 //case 'O':
@@ -360,8 +420,9 @@ namespace ConsoleLib
                 //    break;
                 //case 'Y':
                 //    break;
-                //case 'Z':
-                //    break;
+
+                case 'Z':   // VT52 - Identify
+                    break;
 
                 //case '~':
                 //    break;
@@ -372,93 +433,169 @@ namespace ConsoleLib
             }
         }
 
+        void CursorUp(int Step)
+        {
+            if (Step == 0)
+                Step = 1;
+
+            if (this.CursorTop - Step < this.WindowTop)
+                this.CursorTop = this.WindowTop;
+            else
+                this.CursorTop -= Step;
+        }
+
+        void CursorDown(int Step)
+        {
+            if (Step == 0)
+                Step = 1;
+
+            if (this.CursorTop + Step >= this.WindowTop + this.WindowHeight)
+                this.CursorTop = this.WindowTop + this.WindowHeight - 1;
+
+            else
+                this.CursorTop += Step;
+        }
+
+        void CursorForward(int Step)
+        {
+            if (Step == 0)
+                Step = 1;
+
+            if (this.CursorLeft + Step >= this.WindowLeft + this.WindowWidth)
+                this.CursorLeft = this.WindowLeft + this.WindowWidth - 1;
+
+            else
+                this.CursorLeft += Step;
+        }
+
+        void CursorBackward(int Step)
+        {
+            if (Step == 0)
+                Step = 1;
+
+            if (this.CursorLeft - Step < this.WindowLeft)
+                this.CursorLeft = this.WindowLeft;
+            else
+                this.CursorLeft -= Step;
+        }
+
+        void SetCursor(int Horz, int Vert)
+        {
+            if (Vert == 0)
+                Vert = this.WindowTop;
+
+            else if (Vert > this.WindowHeight)
+                Vert = this.WindowHeight;
+
+            if (Horz == 0)
+                Horz = this.WindowLeft;
+
+            else if (Horz > this.WindowWidth)
+                Horz = this.WindowWidth;
+
+            Vert += this.WindowTop;
+            Horz += this.WindowLeft;
+
+            this.SetCursorPosition(Horz - 1, Vert - 1);
+        }
+
+        void EraseInDisplay(int State)
+        {
+            Coord Pos = ScreenBufferInfo.CursorPosition;
+            uint FillTotal = 0;
+
+            if (State == 0)
+            {
+                // Erase from the active position to the end of the screen, inclusive (default)
+                FillTotal = (uint)((this.WindowHeight - this.CursorTop) * this.WindowWidth);
+                FillTotal += (uint)this.CursorLeft;
+            }
+            else if (State == 1)
+            {
+                // Erase from start of the screen to the active position, inclusive
+                Pos.X = (short)this.WindowLeft;
+                Pos.Y = (short)this.WindowTop;
+                FillTotal = (uint)(this.CursorTop * this.WindowWidth);
+                FillTotal += (uint)this.CursorLeft;
+            }
+            else if (State == 2)
+            {
+                // Erase all of the display – all lines are erased, changed to single-width, and the cursor does not move.
+                Pos.X = (short)this.WindowLeft;
+                Pos.Y = (short)this.WindowTop;
+                FillTotal = (uint)(this.WindowHeight * this.WindowWidth);
+            }
+
+            uint FillOutput = 0;
+            WinAPI.FillConsoleOutputCharacter(Handle, ' ', FillTotal, Pos, out FillOutput);
+            WinAPI.FillConsoleOutputAttribute(Handle, Attribute.Value, FillTotal, Pos, out FillOutput);
+        }
+
+        void EraseInLine(int State)
+        {
+            Coord Pos = ScreenBufferInfo.CursorPosition;
+            uint FillTotal = 0;
+
+            if (State == 0)
+            {
+                // Erase from the active position to the end of the line, inclusive (default)
+                FillTotal = (uint)(this.WindowWidth - this.CursorLeft);
+            }
+            else if (State == 1)
+            {
+                // Erase from the start of the screen to the active position, inclusive
+                FillTotal = (uint)(this.CursorLeft);
+                Pos.X = (short)this.WindowLeft;
+            }
+            else if (State == 2)
+            {
+                // Erase all of the line, inclusive
+                FillTotal = (uint)(this.WindowWidth);
+                Pos.X = (short)this.WindowLeft;
+            }
+
+            uint FillOutput = 0;
+            WinAPI.FillConsoleOutputCharacter(Handle, ' ', FillTotal, Pos, out FillOutput);
+            WinAPI.FillConsoleOutputAttribute(Handle, Attribute.Value, FillTotal, Pos, out FillOutput);
+        }
+        
         void ProcessingCSI(List<string> Params, List<char> Intermediate, char FinalByte)
         {
             switch (FinalByte)
             {
-                case 'A':
-                    {
-                        int Step = GetParam(Params, 0, 1);
-                        this.CursorTop -= Step;
-                    }
+                case 'R':   // CPR – Cursor Position Report
                     break;
 
-                case 'B':
-                    {
-                        int Step = GetParam(Params, 0, 1);
-                        this.CursorTop += Step;
-                    }
+                case 'A':   // CUU – Cursor Up
+                    CursorUp(GetParam(Params, 0, 1));
                     break;
 
-                case 'C':
-                    {
-                        int Step = GetParam(Params, 0, 1);
-                        this.CursorLeft += Step;
-                    }
+                case 'B':   // CUD – Cursor Down 
+                    CursorDown(GetParam(Params, 0, 1));
                     break;
 
-                case 'D':
-                    {
-                        int Step = GetParam(Params, 0, 1);
-                        this.CursorLeft -= Step;
-                    }
+                case 'C':   // CUF – Cursor Forward 
+                    CursorForward(GetParam(Params, 0, 1));
                     break;
 
-                case 'H':
-                    {
-                        int XPos = GetParam(Params, 0, 1);
-                        int YPos = GetParam(Params, 1, 1);
-                        this.SetCursorPosition(YPos - 1, XPos - 1);
-                    }
+                case 'D':   // CUB - Cursor Backward
+                    CursorBackward(GetParam(Params, 0, 1));
                     break;
 
-                case 'J':
-                    {
-                        int State = GetParam(Params, 0);
-                        if (State == 0)
-                        {
-                            // Current position to the end of the page
-                            break;
-                        }
-                        else if (State == 1)
-                        {
-                            // Start of the page to (and including) the current position
-                            break;
-                        }
-                        else if (State == 2)
-                        {
-                            // Clear the screen
-                            this.Clear(false);
-                        }
-                    }
+                case 'H':   // CUP – Cursor Position
+                case 'f':   // HVP – Horizontal and Vertical Position
+                    SetCursor(GetParam(Params, 1, 1), GetParam(Params, 0, 1)); 
                     break;
 
-                case 'K':
-                    {
-                        int State = GetParam(Params, 0);
-                        if (State == 0)
-                        { 
-                            // Erase from Cursor to end of line
-                            int Len = this.BufferWidth - this.CursorLeft;
-                            for (int x = 0; x < Len; x++)
-                            {
-                                this.WritePos(' ', this.CursorLeft+x, this.CursorTop);
-                            }
-                        }
-                        else if (State == 1)
-                        { 
-                            // Erase from start of line to (and including) Cursor
-                            break;
-                        }
-                        else if (State == 2)
-                        {
-                            // Erase Line
-                            break;
-                        }
-                    }
+                case 'J':   // ED – Erase In Display
+                    EraseInDisplay(GetParam(Params, 0));
                     break;
 
-                case 'h':
+                case 'K':   // EL – Erase In Line
+                    EraseInLine(GetParam(Params, 0));
+                    break;
+
+                case 'h': // SM – Set Mode
                     if (Params.Count >= 1 && Params[0] == "?1")
                     {
                         BaseTerminal.CursorKeys = TerminalEmulator.InputMode.Application;
@@ -466,6 +603,7 @@ namespace ConsoleLib
                     else if (Params.Count >= 1 && Params[0] == "?12")
                     {
                         // Blinking
+                        break;
                     }
                     else if (Params.Count >= 1 && Params[0] == "?25")
                     {
@@ -476,9 +614,14 @@ namespace ConsoleLib
                     {
                         BaseTerminal.SwitchToAlternateBuffer();
                     }
+                    else
+                    {
+                        break;
+                    }
                     
                     break;
-                case 'l':
+
+                case 'l': // RM – Reset Mode
                     if (Params.Count >= 1 && Params[0] == "?1")
                     {
                         BaseTerminal.CursorKeys = TerminalEmulator.InputMode.Normal;
@@ -486,6 +629,7 @@ namespace ConsoleLib
                     else if (Params.Count >= 1 && Params[0] == "?12")
                     {
                         // Don't blink
+                        break;
                     }
                     else if (Params.Count >= 1 && Params[0] == "?25")
                     {
@@ -496,10 +640,14 @@ namespace ConsoleLib
                     {
                         BaseTerminal.SwitchToMainBuffer();
                     }
+                    else
+                    {
+                        break;
+                    }
 
                     break;
 
-                case 'm':
+                case 'm': // SGR – Select Graphic Rendition
                     for (int x = 0; x < Params.Count; x++)
                     {
                         int Val = GetParam(Params, x);
@@ -515,6 +663,18 @@ namespace ConsoleLib
                         {
                             CharacterAttribute Temp = this.Attribute;
                             Temp.Value |= CharacterAttributeEnum.FOREGROUND_INTENSITY;
+                            this.Attribute = Temp;
+                        }
+                        else if (Val == 4)
+                        {
+                            CharacterAttribute Temp = this.Attribute;
+                            Temp.Value |= CharacterAttributeEnum.BACKGROUND_INTENSITY;
+                            this.Attribute = Temp;
+                        }
+                        else if (Val == 24)
+                        {
+                            CharacterAttribute Temp = this.Attribute;
+                            Temp.Value &= ~CharacterAttributeEnum.BACKGROUND_INTENSITY;
                             this.Attribute = Temp;
                         }
                         else if (Val == 2 || Val == 22)
@@ -603,7 +763,57 @@ namespace ConsoleLib
                         }
                     }
 
+                    break;
 
+                case 'n':   // DSR – Device Status Report
+                    {                        
+                        string Response = "";
+                        switch (GetParam(Params, 0))
+                        {
+                            case 0:
+                            case 1:
+                                break;
+
+                            case 5:
+                                Response = string.Format("\x1b[{0};{1}R", this.CursorTop - this.WindowTop, this.CursorLeft - this.WindowLeft);
+                                break;
+                            case 6:
+                                Response = string.Format("\x1b[0n");
+                                break;
+                        }
+
+                        BaseTerminal.SendResponse(Response);
+                    }
+                    break;
+
+                case '`':
+                    {
+                        int Value = GetParam(Params, 0, 1);
+                        if (Value == 0)
+                            Value = 1;
+
+                        if (Value > this.WindowWidth)
+                            Value = this.WindowWidth;
+
+                        this.CursorLeft = this.WindowLeft + Value - 1;
+                    }
+                    break;
+
+                case 'd':
+                    {
+                        int Value = GetParam(Params, 0, 1);
+                        if (Value == 0)
+                            Value = 1;
+
+                        if (Value > this.WindowHeight)
+                            Value = this.WindowHeight;
+
+                        this.CursorTop = this.WindowTop + Value - 1;
+                    }
+                    break;
+
+                case 't':
+                    BaseTerminal.SetWindowAndBufferSize(GetParam(Params, 2, 0), GetParam(Params, 1, 0));
                     break;
 
                 default:
@@ -666,17 +876,17 @@ namespace ConsoleLib
 
             return Default;
         }
-
+        
         public override void Write(char[] Data)
         {
-            // Make sure it routes to the corrcet buffer in case we switched between the Alternate and Main buffers
+            // Make sure it routes to the correct buffer in case we switched between the Alternate and Main buffers
             foreach (char c in Data)
                 ConsoleEx.ScreenBuffer.Write(c);
         }
 
         public override void Write(string Data)
         {
-            // Make sure it routes to the corrcet buffer in case we switched between the Alternate and Main buffers
+            // Make sure it routes to the correct buffer in case we switched between the Alternate and Main buffers
             foreach (char c in Data)
                 ConsoleEx.ScreenBuffer.Write(c);
         }

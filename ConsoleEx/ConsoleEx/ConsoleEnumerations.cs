@@ -9,7 +9,7 @@ namespace ConsoleLib
     public enum Characters : ushort
     {
         // Control Charcaters
-        NUL = 0,    //    - NULL
+        NUL = 0,    // ^@  - NULL
         SOH,        // ^A - START OF HEADING
         STX,        // ^B - START OF TEXT
         ETX,        // ^C - END OF TEXT
@@ -43,148 +43,169 @@ namespace ConsoleLib
         US,         // ^_ - UNIT SEPARATOR
         DEL = 127,  //    - DELETE
         
-        // General Image charcaters
-        Face                    = '☺',
-        InvertedFace            = '☻',
-        Heart                   = '♥',
-        Dimand                  = '♦',
-        Club                    = '♣',
-        Spade                   = '♠',
-        Dot                     = '•',
-        InverseDot              = '◘',
-        Circle                  = '○',
-        InverseCircle           = '◙',
-        Mars                    = '♂',
-        Venus                   = '♀',
-        EighthNote              = '♪',
-        DoubleNote              = '♫',
-        Solar                   = '☼',
-        RightTriangle           = '►',
-        LeftTriangle            = '◄',
-        UpDownArrow             = '↕',
-        DoubleExclamation       = '‼',
-        Paragraph               = '¶',
-        Section                 = '§',
-        BlackRectangle          = '▬',
-        UpDownArrowWithBase     = '↨',
-        UpArrow                 = '↑',
-        DownArrow               = '↓',
-        RightArrow              = '→',
-        LeftArrow               = '←',
-        RightAngle              = '∟',
-        LeftRightArrow          = '↔',
-        UpTriangle              = '▲',
-        DownTriangle            = '▼',        
+        // General Image charcaters from code page 437
+        Face                    = '☺',      // 01
+        InvertedFace            = '☻',      // 02
+        Heart                   = '♥',      // 03
+        Dimand                  = '♦',      // 04
+        Club                    = '♣',      // 05
+        Spade                   = '♠',      // 06
+        Dot                     = '•',      // 07
+        InverseDot              = '◘',      // 08
+        Circle                  = '○',      // 09
+        InverseCircle           = '◙',      // 0A
+        Mars                    = '♂',      // 0B
+        Venus                   = '♀',      // 0C
+        EighthNote              = '♪',      // 0D
+        DoubleNote              = '♫',      // 0E
+        Solar                   = '☼',      // 0F
+        RightTriangle           = '►',      // 10
+        LeftTriangle            = '◄',      // 11
+        UpDownArrow             = '↕',      // 12
+        DoubleExclamation       = '‼',      // 13
+        Paragraph               = '¶',      // 14
+        Section                 = '§',      // 15
+        BlackRectangle          = '▬',      // 16
+        UpDownArrowWithBase     = '↨',      // 17
+        UpArrow                 = '↑',      // 18
+        DownArrow               = '↓',      // 19
+        RightArrow              = '→',      // 1A
+        LeftArrow               = '←',      // 1B
+        RightAngle              = '∟',      // 1C
+        LeftRightArrow          = '↔',      // 1D
+        UpTriangle              = '▲',      // 1E
+        DownTriangle            = '▼',      // 1F       
 
-        House                   = '⌂',
+        House                   = '⌂',      // 7F
         
-        Cent                    = '¢',
-        Pound                   = '£',
-        Yen                     = '¥',
-        Peseta                  = '₧',
-        Florin                  = 'ƒ',
+        Cent                    = '¢',      // 9B
+        Pound                   = '£',      // 9C
+        Yen                     = '¥',      // 9D
+        Peseta                  = '₧',      // 9E
+        Florin                  = 'ƒ',      // 9F
 
-        OrdinalFeminine         = 'ª',
-        OrdinalMasculine        = 'º',
-        InvertedQuestion        = '¿',
-        ReversedNotSign         = '⌐',
-        NotSign                 = '¬',
-        OneHalf                 = '½',
-        OneForth                = '¼',
-        InvertedExclimation     = '¡',
-        AngleQuoteLeft          = '«',
-        AngleQuoteRight         = '»',
-        LightShade              = 0x2591, // These charcaters render double height in my default font, so just stick to using the code points.
-        MediumShade             = 0x2592,
-        DarkShade               = 0x2593,
+        OrdinalFeminine         = 'ª',      // A6
+        OrdinalMasculine        = 'º',      // A7
+        InvertedQuestion        = '¿',      // A8
+        ReversedNotSign         = '⌐',      // A9
+        NotSign                 = '¬',      // AA
+        OneHalf                 = '½',      // AB
+        OneForth                = '¼',      // AC
+        InvertedExclimation     = '¡',      // AD
+        AngleQuoteLeft          = '«',      // AE
+        AngleQuoteRight         = '»',      // AF
 
-        FullBlock               = '█',
-        LowerHalfBlock          = '▄',
-        LeftHalfBlock           = '▌',
-        RightHalfBlock          = '▐',
-        UpperHalfBlock          = '▀',
-        Alpha                   = 'α',
-        Beta                    = 'ß',
-        Gamma                   = 'Γ',
-        Pi                      = 'π',
-        CapitalSigma            = 'Σ',
-        Sigma                   = 'σ',
-        Micro                   = 'µ',
-        Tau                     = 'τ',
-        CapitalPhi              = 'Φ',
-        Theta                   = 'Θ',
-        Omega                   = 'Ω',
-        Delta                   = 'δ',
-        Infinity                = '∞',
-        Phi                     = 'φ',
-        Epsilon                 = 'ε',
-        Intersection            = '∩',
-        IdenticalTo             = '≡',
-        PlusMinus               = '±',
-        GreaterThenEqual        = '≥',
-        LessThenEqual           = '≤',
-        IntegralTop             = '⌠',
-        IntegralBottom          = '⌡',
-        Division                = '÷',
-        AlmostEqualTo           = '≈',
-        Degree                  = '°',
-        Bullet                  = 0x2219, // These two look almost the same so use the code point for them to be sure
-        MiddleDot               = 0x00B7,
-        SquareRoot              = '√',
-        SuperScriptN            = 'ⁿ',
-        SuperScript2            = '²',
-        BlackSquare             = '■',
+        // These charcaters render double height in my default font, so just stick to using the code points.
+        LightShade              = 0x2591,   // B0
+        MediumShade             = 0x2592,   // B1
+        DarkShade               = 0x2593,   // B2
 
-        NonBreakSpace           = 0x00a0,    
+        FullBlock               = '█',      // DB
+        LowerHalfBlock          = '▄',      // DC
+        LeftHalfBlock           = '▌',      // DD
+        RightHalfBlock          = '▐',      // DE
+        UpperHalfBlock          = '▀',      // DF
 
+        Alpha                   = 'α',      // E0
+        Beta                    = 'ß',      // E1
+        Gamma                   = 'Γ',      // E2
+        Pi                      = 'π',      // E3
+        CapitalSigma            = 'Σ',      // E4
+        Sigma                   = 'σ',      // E5
+        Micro                   = 'µ',      // E6
+        Tau                     = 'τ',      // E7
+        CapitalPhi              = 'Φ',      // E8
+        Theta                   = 'Θ',      // E9
+        Omega                   = 'Ω',      // EA
+        Delta                   = 'δ',      // EB
+        Infinity                = '∞',      // EC
+        Phi                     = 'φ',      // ED
+        Epsilon                 = 'ε',      // EE
+        Intersection            = '∩',      // EF
+        IdenticalTo             = '≡',      // F0
+        PlusMinus               = '±',      // F1
+        GreaterThenEqual        = '≥',      // F2
+        LessThenEqual           = '≤',      // F3
+        IntegralTop             = '⌠',      // F4
+        IntegralBottom          = '⌡',      // F5
+        Division                = '÷',      // F6
+        AlmostEqualTo           = '≈',      // F7
+        Degree                  = '°',      // F8
+        Bullet                  = 0x2219,   // F9   These two look almost the same so use the code point for them to be sure
+        MiddleDot               = 0x00B7,   // FA
+        SquareRoot              = '√',      // FB
+        SuperScriptN            = 'ⁿ',      // FC
+        SuperScript2            = '²',      // FD
+        BlackSquare             = '■',      // FE
+        NonBreakSpace           = 0x00a0,   // FF
+                
+        // 
         // Box Drawing
-        UpperLeft               = '┌',   
-        UpperRight              = '┐',   
-        LowerLeft               = '└',   
-        LowerRight              = '┘',   
-        Vertical                = '│',   
-        Horizontal              = '─',
-        CrossLeft               = '├',
-        CrossRight              = '┤',
-        CrossDown               = '┬',
-        CrossUp                 = '┴',
-        CrossMiddle             = '┼',
+        UpperLeft               = '┌',      // DA
+        UpperRight              = '┐',      // BF
+        LowerLeft               = '└',      // C0
+        LowerRight              = '┘',      // D9
+        Vertical                = '│',      // B3
+        Horizontal              = '─',      // C4
+        CrossLeft               = '├',      // C3
+        CrossRight              = '┤',      // B4
+        CrossDown               = '┬',      // C2
+        CrossUp                 = '┴',      // C1
+        CrossMiddle             = '┼',      // C5
 
-        DoubleUpperLeft         = '╔',
-        DoubleUpperRight        = '╗',
-        DoubleLowerLeft         = '╚',
-        DoubleLowerRight        = '╝',
-        DoubleVertical          = '║',
-        DoubleHorizontal        = '═',
-        DoubleCrossLeft         = '╠',
-        DoubleCrossRight        = '╣',
-        DoubleCrossDown         = '╦',
-        DoubleCrossUp           = '╩',
-        DoubleCrossMiddle       = '╬',
+        DoubleUpperLeft         = '╔',      // C9
+        DoubleUpperRight        = '╗',      // BB
+        DoubleLowerLeft         = '╚',      // C8
+        DoubleLowerRight        = '╝',      // BC
+        DoubleVertical          = '║',      // BA
+        DoubleHorizontal        = '═',      // CD
+        DoubleCrossLeft         = '╠',      // CC
+        DoubleCrossRight        = '╣',      // B9
+        DoubleCrossDown         = '╦',      // CB
+        DoubleCrossUp           = '╩',      // CA
+        DoubleCrossMiddle       = '╬',      // CE
 
-        DoubleHorUpperLeft      = '╒',
-        DoubleHorUpperRight     = '╕',
-        DoubleHorLowerLeft      = '╘',
-        DoubleHorLowerRight     = '╛',
-        //DoubleHorVertical       = '│',
-        //DoubleHorHorizontal     = '═',
-        DoubleHorCrossLeft      = '╞',
-        DoubleHorCrossRight     = '╡',
-        DoubleHorCrossDown      = '╤',
-        DoubleHorCrossUp        = '╧',
-        DoubleHorCrossMiddle    = '╪',
+        DoubleHorUpperLeft      = '╒',      // D5
+        DoubleHorUpperRight     = '╕',      // B8
+        DoubleHorLowerLeft      = '╘',      // D4
+        DoubleHorLowerRight     = '╛',      // BE
+        DoubleHorVertical       = Vertical,
+        DoubleHorHorizontal     = DoubleHorizontal,
+        DoubleHorCrossLeft      = '╞',      // C6
+        DoubleHorCrossRight     = '╡',      // B5
+        DoubleHorCrossDown      = '╤',      // D1
+        DoubleHorCrossUp        = '╧',      // CF
+        DoubleHorCrossMiddle    = '╪',      // D8
 
-        DoubleVerUpperLeft      = '╓',
-        DoubleVerUpperRight     = '╖',
-        DoubleVerLowerLeft      = '╙',
-        DoubleVerLowerRight     = '╜',
-        //DoubleVerDoubleVertical = '║',
-        //DoubleVerHorizontal     = '─',
-        DoubleVerCrossLeft      = '╟',
-        DoubleVerCrossRight     = '╢',
-        DoubleVerCrossDown      = '╥',
-        DoubleVerCrossUp        = '╨',
-        DoubleVerCrossMiddle    = '╫',    
+        DoubleVerUpperLeft      = '╓',      // D6
+        DoubleVerUpperRight     = '╖',      // B7
+        DoubleVerLowerLeft      = '╙',      // D3
+        DoubleVerLowerRight     = '╜',      // BD
+        DoubleVerDoubleVertical = DoubleVertical,
+        DoubleVerHorizontal     = Horizontal,
+        DoubleVerCrossLeft      = '╟',      // C7
+        DoubleVerCrossRight     = '╢',      // B6
+        DoubleVerCrossDown      = '╥',      // D2
+        DoubleVerCrossUp        = '╨',      // D0
+        DoubleVerCrossMiddle    = '╫',      // D7
+
+        // DEC Speical Characters
+        BlackDimond             = '◆',
+        NotEqual                = '≠',
+
+        SymbolHT                = 0x2409,   // The Symbols are really hard to read and not in every font, so use the codes for them
+        SymbolLF                = 0x240A,
+        SymbolVT                = 0x240B,
+        SymbolFF                = 0x240C,
+        SymbolCR                = 0x240D,
+        SymbolNL                = 0x2424,
+
+        ScanLine1               = 0x23BA,   // These really look the same as other charcatres, so use the codes for them just be be safe.
+        ScanLine3               = 0x23BB,
+        ScanLine7               = 0x23BC,
+        ScanLine9               = 0x23BD,
+        
+
     }    
     #endregion
 

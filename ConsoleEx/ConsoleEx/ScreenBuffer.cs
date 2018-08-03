@@ -725,7 +725,15 @@ namespace ConsoleLib
         // Scrolls the whole buffer up a given number of lines, filling with blanks in the current colors
         public void Scroll(int LineCount = 1)
         {
-            MoveBufferArea(0, LineCount, BufferWidth, BufferHeight - LineCount, 0, 0, ' ', Attribute.Foreground, Attribute.Background);
+            if (LineCount < 0)
+            {
+                LineCount = 0 - LineCount;
+                MoveBufferArea(0, 0, BufferWidth, BufferHeight - LineCount, 0, LineCount, ' ', Attribute.Foreground, Attribute.Background);
+            }
+            else
+            {
+                MoveBufferArea(0, LineCount, BufferWidth, BufferHeight - LineCount, 0, 0, ' ', Attribute.Foreground, Attribute.Background);
+            }
         }
 
         public void MoveBufferArea(int DataLeft, int DataTop, int DataWidth, int DataHeight, int DestX, int DestY, char FillChar = ' ')

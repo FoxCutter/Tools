@@ -26,6 +26,8 @@ namespace ConsoleLib
         TerminalScreenBuffer AlternateBuffer;
         TerminalInputBuffer InputBuffer;
 
+        TerminalScreenBuffer CurrentBuffer;
+
         int MainBufferCursorTop;
         int MainBufferCursorLeft;
         
@@ -39,10 +41,12 @@ namespace ConsoleLib
             InputBuffer = new TerminalInputBuffer(this, ConsoleEx.StdInput);
 
             // And put our buffers in control
+            CurrentBuffer = MainBuffer;
             ConsoleEx.ScreenBuffer = MainBuffer;
             ConsoleEx.InputBuffer = InputBuffer;
 
             ConsoleEx.ScreenBuffer.ProcessedOutput = false;
+            ConsoleEx.ScreenBuffer.WrapAtEOL = false;
 
             CharacterAttribute Temp = ConsoleEx.ScreenBuffer.Attribute;
             Temp.Foreground = ConsoleColor.DarkGray;
@@ -56,20 +60,47 @@ namespace ConsoleLib
 
         internal void SwitchToAlternateBuffer()
         {
-            MainBufferCursorTop = MainBuffer.CursorTop;
-            MainBufferCursorLeft = MainBuffer.CursorLeft;
+            MainBufferCursorTop = MainBuffer.CursorTop - MainBuffer.WindowTop;
+            MainBufferCursorLeft = MainBuffer.CursorLeft - MainBuffer.WindowLeft;
 
             AlternateBuffer = new TerminalScreenBuffer(this);
 
             AlternateBuffer.SetCursorPosition(MainBufferCursorLeft, MainBufferCursorTop);
             ConsoleEx.SwapBuffers(AlternateBuffer);
-
+            CurrentBuffer = AlternateBuffer;
         }
 
         internal void SwitchToMainBuffer()
         {
-            MainBuffer.SetCursorPosition(MainBufferCursorLeft, MainBufferCursorTop);
+            MainBuffer.SetCursorPosition(MainBufferCursorLeft + MainBuffer.WindowLeft, MainBuffer.WindowTop + MainBufferCursorTop);
             ConsoleEx.SwapBuffers(MainBuffer);
+            CurrentBuffer = MainBuffer;
+        }
+
+        internal void SendResponse(string Value)
+        {
+
+        }
+
+
+        public void SetWindowAndBufferSize(int Width, int Height)
+        {
+            ConsoleScreenBufferInfoEx Buffer = CurrentBuffer.ScreenBufferInfo;
+
+            Buffer.Window.Width = (short)Width;
+            Buffer.BufferSize.X = (short)Width;
+            Buffer.MaximumWindowSize.X = (short)Width;
+
+            Buffer.Window.Height = Height;
+            if (Buffer.BufferSize.Y < Buffer.Window.Bottom)
+                Buffer.BufferSize.Y = Buffer.Window.Bottom;
+
+            Buffer.MaximumWindowSize.Y = (short)Height;
+
+
+            CurrentBuffer.ScreenBufferInfo = Buffer;
+            
+
         }
 
 
