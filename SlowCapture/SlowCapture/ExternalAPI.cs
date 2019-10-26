@@ -43,6 +43,9 @@ namespace SlowCapture
         public static extern bool IsWindowVisible(IntPtr hWnd);
 
         [DllImport("user32.dll")]
+        public static extern bool IsWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
         public static extern bool IsIconic(IntPtr hWnd);
 
         [DllImport("user32.dll")]
@@ -91,20 +94,26 @@ namespace SlowCapture
         [DllImport("Kernel32.dll")]
         public static extern bool CloseHandle(IntPtr hObject);
 
+        [DllImport("kernel32", CharSet = CharSet.Unicode)]
+        public static extern int GetPrivateProfileString(string lpAppName, string lpKeyName, string lpDefault, StringBuilder lpReturnedString, int nSize, string lpFileName);
+
+        [DllImport("kernel32", CharSet = CharSet.Unicode)]
+        public static extern bool WritePrivateProfileString(string lpAppName, string lpKeyName, string lpString, string lpFileName);
+
         public static Bitmap CaptureWindow(IntPtr hWnd)
         {
             if (hWnd == IntPtr.Zero)
                 return null;
 
             int style = ExternalAPI.GetWindowLong(hWnd, -16);
-            //int Exstyle = User32.GetWindowLong(hWnd, -20);
+            //int Exstyle = ExternalAPI.GetWindowLong(hWnd, -20);
 
             // Ignore Popup windows 
             if ((style & 0x80000000) != 0)
                 return null;
 
-            //var winrect = new User32.Rect();
-            //User32.GetWindowRect(hWnd, ref winrect);
+            var winrect = new ExternalAPI.Rect();
+            ExternalAPI.GetWindowRect(hWnd, ref winrect);
 
             var clientrec = new ExternalAPI.Rect();
             ExternalAPI.GetClientRect(hWnd, ref clientrec);

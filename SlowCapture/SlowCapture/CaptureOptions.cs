@@ -15,6 +15,7 @@ namespace SlowCapture
         public bool MatchTitle { get; set; }
         public string WindowName { get; set; }
         public string WindowTitle { get; set; }
+        public IntPtr WindowHandle { get; set; }
 
         public CaptureOptions()
         {
@@ -86,6 +87,7 @@ namespace SlowCapture
         private void CaptureOptions_Load(object sender, EventArgs e)
         {
             WindowDropdown.Items.Clear();
+            WindowHandle = IntPtr.Zero;
 
             ExternalAPI.EnumWindows(new ExternalAPI.EnumWindowsProc(EnumWindowsCallback), IntPtr.Zero);
 
@@ -104,7 +106,6 @@ namespace SlowCapture
                 }
             }
 
-
             MatchTitleCheck.Checked = MatchTitle;
         }
 
@@ -119,11 +120,12 @@ namespace SlowCapture
 
             WindowName = Data.Name;
             WindowTitle = Data.Title;
+            WindowHandle = Data.Handle;
 
             if (CapturePreview.Image != null)
                 CapturePreview.Image.Dispose();
 
-            CapturePreview.Image = ExternalAPI.CaptureWindow(Data.Handle);
+            CapturePreview.Image = ExternalAPI.CaptureWindow(WindowHandle);
         }
 
         private void OKButton_Click(object sender, EventArgs e)

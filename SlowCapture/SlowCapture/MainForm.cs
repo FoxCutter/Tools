@@ -22,6 +22,7 @@ namespace SlowCapture
         private string WindowName = "";
         private string WindowTitle = "";
         private bool MatchWindowTitle = false;
+        private IntPtr MatchWindowHandle = IntPtr.Zero;
 
         private bool ResizeOutput = false;
         public int ResizeOutputHeight = 720;
@@ -32,20 +33,15 @@ namespace SlowCapture
         public int CroppingLeft = 0;
         public int CroppingRight = 0;
 
+        string SettingsFile = "";
+
         public MainForm()
         {
-            WindowName = "Winword";
-
-            CroppingLeft = 0;
-            CroppingRight = 0;
-            CroppingBottom = 0;
-            CroppingTop = 64;
-
-            ResizeOutput = true;
-            ResizeOutputHeight = 660;
-            ResizeOutputWidth = 720;
-
             InitializeComponent();
+
+            SettingsFile = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "SlowCapture.ini");
+
+            LoadSettings();
         }
 
         protected override void WndProc(ref Message m)
@@ -64,6 +60,7 @@ namespace SlowCapture
                         WindowName = CaptureOptionsWindow.WindowName;
                         WindowTitle = CaptureOptionsWindow.WindowTitle;
                         MatchWindowTitle = CaptureOptionsWindow.MatchTitle;
+                        MatchWindowHandle = CaptureOptionsWindow.WindowHandle;
                     }
                 }
                 else if ((ID & 0xFFFF) == 0x3001)
@@ -115,7 +112,15 @@ namespace SlowCapture
         void UpdateCapture(Bitmap Image)
         {
             if (Image == null)
+            {
+                if (PreviewScreen.Image != null)
+                {
+                    PreviewScreen.Image.Dispose();
+                    PreviewScreen.Image = null;
+                }
+
                 return;
+            }
 
             int height = Image.Height;
             int width = Image.Width;
@@ -245,8 +250,7 @@ namespace SlowCapture
 
         EnumCallback FindProcessCallback = new EnumCallback();
 
-
-        private IntPtr FindProcess (string ProcessName, string WindowTitle, bool MatchTitle)
+        private IntPtr FindWindow (string ProcessName, string WindowTitle, bool MatchTitle)
         {
             FindProcessCallback.Name = ProcessName;
             FindProcessCallback.Title = WindowTitle;
@@ -265,21 +269,101 @@ namespace SlowCapture
             {
                 System.Threading.Thread.Sleep(0);
 
-                IntPtr CaptureProcess = FindProcess(WindowName, WindowTitle, MatchWindowTitle);
+                // Only look up the Window if we don't have one, or if the one we have is no longer a window or is hidden
+                if(MatchWindowHandle == IntPtr.Zero || !ExternalAPI.IsWindow(MatchWindowHandle) || !ExternalAPI.IsWindowVisible(MatchWindowHandle))
+                {
+                    bool A = ExternalAPI.IsWindow(MatchWindowHandle);
+                    bool B = ExternalAPI.IsWindowVisible(MatchWindowHandle);
 
-                if (CaptureProcess == IntPtr.Zero)
-                    continue;
+                    MatchWindowHandle = FindWindow(WindowName, WindowTitle, MatchWindowTitle);
+                }
 
-                Bitmap Image = ExternalAPI.CaptureWindow(CaptureProcess);
-
-                if(Image != null)
-                    this.Invoke(UpdateCaptureCallback, Image);
+                Bitmap Image = null;
+                if (MatchWindowHandle != IntPtr.Zero)
+                    Image = ExternalAPI.CaptureWindow(MatchWindowHandle);
+                
+                this.Invoke(UpdateCaptureCallback, Image);
             }
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Updater.Abort();
+            SaveSettings();
+        }
+
+        private int[] SplitInput(string Input)
+        {
+            string[] Entries = Input.Split(',');
+
+            List<int> Ret = new List<int>();
+
+            foreach(string Val in Entries)
+            {
+                int Temp;
+                if(int.TryParse(Val.Trim(), out Temp))
+                {
+                    Ret.Add(Temp);
+                }
+                else
+                {
+                    Ret.Add(0);
+                }
+            }
+
+            return Ret.ToArray(); ;
+        }
+
+        private void LoadSettings()
+        {
+            StringBuilder TempString = new StringBuilder(1024);
+
+            ExternalAPI.GetPrivateProfileString("Capture", "Name", "", TempString, 1024, SettingsFile);
+            WindowName = TempString.ToString();
+
+            ExternalAPI.GetPrivateProfileString("Capture", "Title", "", TempString, 1024, SettingsFile);
+            WindowTitle = TempString.ToString();
+
+            ExternalAPI.GetPrivateProfileString("Capture", "Match Title", "False", TempString, 1024, SettingsFile);
+            bool.TryParse(TempString.ToString(), out MatchWindowTitle);
+
+
+            ExternalAPI.GetPrivateProfileString("Settings", "Resize Output", "False", TempString, 1024, SettingsFile);
+            bool.TryParse(TempString.ToString(), out ResizeOutput);
+
+            ExternalAPI.GetPrivateProfileString("Settings", "Output Size", "1280, 720", TempString, 1024, SettingsFile);
+            {
+                int [] Values = SplitInput(TempString.ToString());
+                if(Values.Length >= 2)
+                {
+                    ResizeOutputWidth = Values[0];
+                    ResizeOutputHeight = Values[1];
+                }
+            }
+
+            ExternalAPI.GetPrivateProfileString("Settings", "Clipping", "0, 0, 0, 0", TempString, 1024, SettingsFile);
+            {
+                int[] Values = SplitInput(TempString.ToString());
+                if (Values.Length >= 4)
+                {
+                    CroppingTop = Values[0];
+                    CroppingLeft = Values[1];
+                    CroppingBottom = Values[2];
+                    CroppingRight = Values[3];
+                }
+            }
+        }
+
+        private void SaveSettings()
+        {
+
+            ExternalAPI.WritePrivateProfileString("Capture", "Name", WindowName, SettingsFile);
+            ExternalAPI.WritePrivateProfileString("Capture", "Title", WindowTitle, SettingsFile);
+            ExternalAPI.WritePrivateProfileString("Capture", "Match Title", MatchWindowTitle.ToString(), SettingsFile);
+
+            ExternalAPI.WritePrivateProfileString("Settings", "Resize Output", ResizeOutput.ToString(), SettingsFile);
+            ExternalAPI.WritePrivateProfileString("Settings", "Output Size", string.Format("{0}, {1}", ResizeOutputWidth, ResizeOutputHeight), SettingsFile);
+            ExternalAPI.WritePrivateProfileString("Settings", "Clipping", string.Format("{0}, {1}, {2}, {3}", CroppingTop, CroppingLeft, CroppingBottom, CroppingRight), SettingsFile);
         }
     }
 }

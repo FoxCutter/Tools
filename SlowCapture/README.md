@@ -22,7 +22,7 @@ Slow Capture can match a window based on both the application name and optionall
 
 ## Installation
 
-The program is provided as a single EXE file, and should be able to run in place. The settings file will be written to the same location as the EXE file.
+The program is provided as a single EXE file, and should be able to run in place. The settings file will be written to the current directory.
 
 ## How does it capture windows that streaming programs can't
 
