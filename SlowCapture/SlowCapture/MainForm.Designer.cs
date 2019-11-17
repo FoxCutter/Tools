@@ -40,7 +40,7 @@
             this.PreviewScreen.Location = new System.Drawing.Point(0, 0);
             this.PreviewScreen.Name = "PreviewScreen";
             this.PreviewScreen.Size = new System.Drawing.Size(456, 291);
-            this.PreviewScreen.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.PreviewScreen.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.PreviewScreen.TabIndex = 1;
             this.PreviewScreen.TabStop = false;
             // 

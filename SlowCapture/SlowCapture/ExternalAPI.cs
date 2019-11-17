@@ -77,6 +77,9 @@ namespace SlowCapture
         public static extern IntPtr CreateMenu();
 
         [DllImport("user32.dll")]
+        public static extern int GetSystemMetrics(int nIndex);
+
+        [DllImport("user32.dll")]
         public static extern bool SetMenu(IntPtr hWnd, IntPtr hMenu);
 
         [DllImport("user32.dll")]

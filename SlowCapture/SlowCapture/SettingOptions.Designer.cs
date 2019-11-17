@@ -38,17 +38,20 @@
             System.Windows.Forms.Label label10;
             System.Windows.Forms.Label label5;
             System.Windows.Forms.Label label6;
+            System.Windows.Forms.GroupBox groupBox1;
             this.CroppingRightControl = new System.Windows.Forms.NumericUpDown();
             this.CroppingBottomControl = new System.Windows.Forms.NumericUpDown();
             this.CroppingTopControl = new System.Windows.Forms.NumericUpDown();
             this.CroppingLeftControl = new System.Windows.Forms.NumericUpDown();
+            this.ResizeHeightTextbox = new System.Windows.Forms.TextBox();
+            this.ResizeWidthTextbox = new System.Windows.Forms.TextBox();
             this.WindowHeightLabel = new System.Windows.Forms.Label();
             this.WindowWidthLabel = new System.Windows.Forms.Label();
             this.ResizeCaptureCheck = new System.Windows.Forms.CheckBox();
             this.AbortButton = new System.Windows.Forms.Button();
             this.OKButton = new System.Windows.Forms.Button();
-            this.ResizeWidthTextbox = new System.Windows.Forms.TextBox();
-            this.ResizeHeightTextbox = new System.Windows.Forms.TextBox();
+            this.CaptureRateBar = new System.Windows.Forms.TrackBar();
+            this.CaptureRateDisplay = new System.Windows.Forms.Label();
             groupBox3 = new System.Windows.Forms.GroupBox();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
@@ -59,12 +62,15 @@
             label10 = new System.Windows.Forms.Label();
             label5 = new System.Windows.Forms.Label();
             label6 = new System.Windows.Forms.Label();
+            groupBox1 = new System.Windows.Forms.GroupBox();
             groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CroppingRightControl)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.CroppingBottomControl)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.CroppingTopControl)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.CroppingLeftControl)).BeginInit();
             groupBox2.SuspendLayout();
+            groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.CaptureRateBar)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox3
@@ -190,6 +196,28 @@
             groupBox2.TabStop = false;
             groupBox2.Text = "Sizing";
             // 
+            // ResizeHeightTextbox
+            // 
+            this.ResizeHeightTextbox.Location = new System.Drawing.Point(65, 68);
+            this.ResizeHeightTextbox.MaxLength = 4;
+            this.ResizeHeightTextbox.Name = "ResizeHeightTextbox";
+            this.ResizeHeightTextbox.Size = new System.Drawing.Size(53, 20);
+            this.ResizeHeightTextbox.TabIndex = 3;
+            this.ResizeHeightTextbox.Text = "0";
+            this.ResizeHeightTextbox.TextChanged += new System.EventHandler(this.ResizeHeightTextbox_TextChanged);
+            this.ResizeHeightTextbox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ResizeHeightTextbox_KeyPress);
+            // 
+            // ResizeWidthTextbox
+            // 
+            this.ResizeWidthTextbox.Location = new System.Drawing.Point(65, 42);
+            this.ResizeWidthTextbox.MaxLength = 4;
+            this.ResizeWidthTextbox.Name = "ResizeWidthTextbox";
+            this.ResizeWidthTextbox.Size = new System.Drawing.Size(53, 20);
+            this.ResizeWidthTextbox.TabIndex = 1;
+            this.ResizeWidthTextbox.Text = "0";
+            this.ResizeWidthTextbox.TextChanged += new System.EventHandler(this.ResizeWidthTextbox_TextChanged);
+            this.ResizeWidthTextbox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ResizeWidthTextbox_KeyPress);
+            // 
             // WindowHeightLabel
             // 
             this.WindowHeightLabel.AutoSize = true;
@@ -259,8 +287,9 @@
             // 
             // AbortButton
             // 
+            this.AbortButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.AbortButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.AbortButton.Location = new System.Drawing.Point(253, 245);
+            this.AbortButton.Location = new System.Drawing.Point(253, 335);
             this.AbortButton.Name = "AbortButton";
             this.AbortButton.Size = new System.Drawing.Size(77, 23);
             this.AbortButton.TabIndex = 3;
@@ -270,7 +299,8 @@
             // 
             // OKButton
             // 
-            this.OKButton.Location = new System.Drawing.Point(163, 245);
+            this.OKButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.OKButton.Location = new System.Drawing.Point(163, 335);
             this.OKButton.Name = "OKButton";
             this.OKButton.Size = new System.Drawing.Size(77, 23);
             this.OKButton.TabIndex = 2;
@@ -278,27 +308,39 @@
             this.OKButton.UseVisualStyleBackColor = true;
             this.OKButton.Click += new System.EventHandler(this.OKButton_Click);
             // 
-            // ResizeWidthTextbox
+            // groupBox1
             // 
-            this.ResizeWidthTextbox.Location = new System.Drawing.Point(65, 42);
-            this.ResizeWidthTextbox.MaxLength = 4;
-            this.ResizeWidthTextbox.Name = "ResizeWidthTextbox";
-            this.ResizeWidthTextbox.Size = new System.Drawing.Size(53, 20);
-            this.ResizeWidthTextbox.TabIndex = 1;
-            this.ResizeWidthTextbox.Text = "0";
-            this.ResizeWidthTextbox.TextChanged += new System.EventHandler(this.ResizeWidthTextbox_TextChanged);
-            this.ResizeWidthTextbox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ResizeWidthTextbox_KeyPress);
+            groupBox1.Controls.Add(this.CaptureRateDisplay);
+            groupBox1.Controls.Add(this.CaptureRateBar);
+            groupBox1.Cursor = System.Windows.Forms.Cursors.Default;
+            groupBox1.Location = new System.Drawing.Point(12, 251);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new System.Drawing.Size(318, 78);
+            groupBox1.TabIndex = 2;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "Capture Rate";
             // 
-            // ResizeHeightTextbox
+            // CaptureRateBar
             // 
-            this.ResizeHeightTextbox.Location = new System.Drawing.Point(65, 68);
-            this.ResizeHeightTextbox.MaxLength = 4;
-            this.ResizeHeightTextbox.Name = "ResizeHeightTextbox";
-            this.ResizeHeightTextbox.Size = new System.Drawing.Size(53, 20);
-            this.ResizeHeightTextbox.TabIndex = 3;
-            this.ResizeHeightTextbox.Text = "0";
-            this.ResizeHeightTextbox.TextChanged += new System.EventHandler(this.ResizeHeightTextbox_TextChanged);
-            this.ResizeHeightTextbox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ResizeHeightTextbox_KeyPress);
+            this.CaptureRateBar.LargeChange = 250;
+            this.CaptureRateBar.Location = new System.Drawing.Point(13, 19);
+            this.CaptureRateBar.Maximum = 1000;
+            this.CaptureRateBar.Name = "CaptureRateBar";
+            this.CaptureRateBar.Size = new System.Drawing.Size(299, 45);
+            this.CaptureRateBar.SmallChange = 50;
+            this.CaptureRateBar.TabIndex = 0;
+            this.CaptureRateBar.TickFrequency = 100;
+            this.CaptureRateBar.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
+            this.CaptureRateBar.Scroll += new System.EventHandler(this.CaptureRateBar_Scroll);
+            // 
+            // CaptureRateDisplay
+            // 
+            this.CaptureRateDisplay.AutoSize = true;
+            this.CaptureRateDisplay.Location = new System.Drawing.Point(40, 51);
+            this.CaptureRateDisplay.Name = "CaptureRateDisplay";
+            this.CaptureRateDisplay.Size = new System.Drawing.Size(98, 13);
+            this.CaptureRateDisplay.TabIndex = 1;
+            this.CaptureRateDisplay.Text = "As Fast as Possible";
             // 
             // SettingOptions
             // 
@@ -306,7 +348,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.AbortButton;
-            this.ClientSize = new System.Drawing.Size(346, 279);
+            this.ClientSize = new System.Drawing.Size(346, 367);
+            this.Controls.Add(groupBox1);
             this.Controls.Add(this.AbortButton);
             this.Controls.Add(this.OKButton);
             this.Controls.Add(groupBox3);
@@ -327,6 +370,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.CroppingLeftControl)).EndInit();
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.CaptureRateBar)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -344,5 +390,7 @@
         private System.Windows.Forms.Button OKButton;
         private System.Windows.Forms.TextBox ResizeHeightTextbox;
         private System.Windows.Forms.TextBox ResizeWidthTextbox;
+        private System.Windows.Forms.TrackBar CaptureRateBar;
+        private System.Windows.Forms.Label CaptureRateDisplay;
     }
 }

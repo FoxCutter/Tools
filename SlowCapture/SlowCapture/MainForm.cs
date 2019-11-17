@@ -33,6 +33,8 @@ namespace SlowCapture
         public int CroppingLeft = 0;
         public int CroppingRight = 0;
 
+        public int CaptureRate = 0;
+
         string SettingsFile = "";
 
         public MainForm()
@@ -74,6 +76,8 @@ namespace SlowCapture
                     SettingOptionsWindow.CroppingLeft = CroppingLeft;
                     SettingOptionsWindow.CroppingRight = CroppingRight;
 
+                    SettingOptionsWindow.CaptureRate = CaptureRate;
+
                     if(SettingOptionsWindow.ShowDialog(this) == DialogResult.OK)
                     {
                         ResizeOutput = SettingOptionsWindow.ResizeOutput;
@@ -84,6 +88,7 @@ namespace SlowCapture
                         CroppingBottom = SettingOptionsWindow.CroppingBottom;
                         CroppingLeft = SettingOptionsWindow.CroppingLeft;
                         CroppingRight = SettingOptionsWindow.CroppingRight;
+                        CaptureRate = SettingOptionsWindow.CaptureRate;
                     }
                 }
             }
@@ -157,26 +162,28 @@ namespace SlowCapture
                     return;
                 }
 
+                int MenuThickness = ExternalAPI.GetSystemMetrics(15);
+
                 if (SettingOptionsWindow.Visible)
                 {
                     if (SettingOptionsWindow.ResizeOutput)
                     {
-                        this.SetClientSizeCore(SettingOptionsWindow.ResizeOutputWidth, SettingOptionsWindow.ResizeOutputHeight);
+                        this.SetClientSizeCore(SettingOptionsWindow.ResizeOutputWidth, SettingOptionsWindow.ResizeOutputHeight + MenuThickness);
                     }
                     else
                     {
-                        this.SetClientSizeCore(width, height);
+                        this.SetClientSizeCore(width, height + MenuThickness);
                     }
                 }
                 else
                 {
                     if (ResizeOutput)
                     {
-                        this.SetClientSizeCore(ResizeOutputWidth, ResizeOutputHeight);
+                        this.SetClientSizeCore(ResizeOutputWidth, ResizeOutputHeight + MenuThickness);
                     }
                     else
                     {
-                        this.SetClientSizeCore(width, height);
+                        this.SetClientSizeCore(width, height + MenuThickness);
                     }
                 }
 
@@ -267,10 +274,17 @@ namespace SlowCapture
         {
             while(true)
             {
-                System.Threading.Thread.Sleep(0);
+                if (SettingOptionsWindow.Visible)
+                {
+                    System.Threading.Thread.Sleep(SettingOptionsWindow.CaptureRate);
+                }
+                else
+                {
+                    System.Threading.Thread.Sleep(CaptureRate);
+                }
 
                 // Only look up the Window if we don't have one, or if the one we have is no longer a window or is hidden
-                if(MatchWindowHandle == IntPtr.Zero || !ExternalAPI.IsWindow(MatchWindowHandle) || !ExternalAPI.IsWindowVisible(MatchWindowHandle))
+                if (MatchWindowHandle == IntPtr.Zero || !ExternalAPI.IsWindow(MatchWindowHandle) || !ExternalAPI.IsWindowVisible(MatchWindowHandle))
                 {
                     bool A = ExternalAPI.IsWindow(MatchWindowHandle);
                     bool B = ExternalAPI.IsWindowVisible(MatchWindowHandle);
@@ -352,6 +366,9 @@ namespace SlowCapture
                     CroppingRight = Values[3];
                 }
             }
+
+            ExternalAPI.GetPrivateProfileString("Settings", "Capture Rate", "0", TempString, 1024, SettingsFile);
+            int.TryParse(TempString.ToString(), out CaptureRate);
         }
 
         private void SaveSettings()
@@ -364,6 +381,7 @@ namespace SlowCapture
             ExternalAPI.WritePrivateProfileString("Settings", "Resize Output", ResizeOutput.ToString(), SettingsFile);
             ExternalAPI.WritePrivateProfileString("Settings", "Output Size", string.Format("{0}, {1}", ResizeOutputWidth, ResizeOutputHeight), SettingsFile);
             ExternalAPI.WritePrivateProfileString("Settings", "Clipping", string.Format("{0}, {1}, {2}, {3}", CroppingTop, CroppingLeft, CroppingBottom, CroppingRight), SettingsFile);
+            ExternalAPI.WritePrivateProfileString("Settings", "Capture Rate", CaptureRate.ToString(), SettingsFile);
         }
     }
 }

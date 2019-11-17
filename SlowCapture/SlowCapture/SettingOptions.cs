@@ -23,6 +23,8 @@ namespace SlowCapture
         public int CroppingLeft { get; set; }
         public int CroppingRight { get; set; }
 
+        public int CaptureRate { get; set; }
+
         public int WindowHeight
         {
             set
@@ -49,6 +51,8 @@ namespace SlowCapture
             CroppingBottom = 0;
             CroppingLeft = 0;
             CroppingRight = 0;
+
+            CaptureRate = 0;
 
             InitializeComponent();
         }
@@ -78,6 +82,9 @@ namespace SlowCapture
 
             ResizeWidthTextbox.Text = ResizeOutputWidth.ToString();
             ResizeHeightTextbox.Text = ResizeOutputHeight.ToString();
+
+            CaptureRateBar.Value = CaptureRate;
+            CaptureRateBar_Scroll(null, null);
         }
 
         private void ResizeCaptureCheck_CheckedChanged(object sender, EventArgs e)
@@ -133,6 +140,18 @@ namespace SlowCapture
             {
                 ResizeOutputHeight = Temp;
             }
+        }
+
+        private void CaptureRateBar_Scroll(object sender, EventArgs e)
+        {
+            CaptureRate = CaptureRateBar.Value;
+
+            if (CaptureRate == 0)
+                CaptureRateDisplay.Text = "As Fast as Possible";
+
+            else
+                CaptureRateDisplay.Text = string.Format("~{0:F} FPS", 1000.0 / CaptureRate);
+
         }
     }
 }
