@@ -17,6 +17,9 @@ namespace SlowCapture
         public string WindowTitle { get; set; }
         public IntPtr WindowHandle { get; set; }
 
+        public bool TopmostOnly { get; set; }
+        public CaptureMethod Method { get; set; }
+
         public CaptureOptions()
         {
             InitializeComponent();
@@ -107,6 +110,9 @@ namespace SlowCapture
             }
 
             MatchTitleCheck.Checked = MatchTitle;
+            TopmostOnlyCheck.Checked = TopmostOnly;
+
+            MethodDropdown.SelectedIndex = (int)Method;
         }
 
         private void MatchTitleCheck_CheckedChanged(object sender, EventArgs e)
@@ -121,11 +127,6 @@ namespace SlowCapture
             WindowName = Data.Name;
             WindowTitle = Data.Title;
             WindowHandle = Data.Handle;
-
-            if (CapturePreview.Image != null)
-                CapturePreview.Image.Dispose();
-
-            CapturePreview.Image = ExternalAPI.CaptureWindow(WindowHandle);
         }
 
         private void OKButton_Click(object sender, EventArgs e)
@@ -139,6 +140,27 @@ namespace SlowCapture
             this.DialogResult = DialogResult.Cancel;
             this.Close();
 
+        }
+
+        private void MethodDropdown_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Method = (CaptureMethod)MethodDropdown.SelectedIndex;
+        }
+
+        private void TopmostOnlyCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            TopmostOnly = TopmostOnlyCheck.Checked;
+        }
+
+        private void UpdateTimer_Tick(object sender, EventArgs e)
+        {
+            if (TopmostOnly && ExternalAPI.GetForegroundWindow() != WindowHandle)
+                return;
+
+            if (CapturePreview.Image != null)
+                CapturePreview.Image.Dispose();
+
+            CapturePreview.Image = ExternalAPI.CaptureWindow(WindowHandle, Method);
         }
     }
 }

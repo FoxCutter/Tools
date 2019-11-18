@@ -103,7 +103,7 @@ namespace SlowCapture
         [DllImport("kernel32", CharSet = CharSet.Unicode)]
         public static extern bool WritePrivateProfileString(string lpAppName, string lpKeyName, string lpString, string lpFileName);
 
-        public static Bitmap CaptureWindow(IntPtr hWnd)
+        public static Bitmap CaptureWindow(IntPtr hWnd, CaptureMethod Method)
         {
             if (hWnd == IntPtr.Zero)
                 return null;
@@ -131,11 +131,23 @@ namespace SlowCapture
 
             using (Graphics graphics = Graphics.FromImage(bmp))
             {
-                IntPtr Handle = graphics.GetHdc();
+                if (Method == CaptureMethod.PaintWindow)
+                {
+                    IntPtr Handle = graphics.GetHdc();
 
-                ExternalAPI.PrintWindow(hWnd, Handle, 1);
+                    ExternalAPI.PrintWindow(hWnd, Handle, 1);
 
-                graphics.ReleaseHdc(Handle);
+                    graphics.ReleaseHdc(Handle);
+                }
+                else if (Method == CaptureMethod.DesktopCapture)
+                {
+                    var tempPoint = new Point();
+                    tempPoint.x = clientrec.left;
+                    tempPoint.y = clientrec.top;
+                    ClientToScreen(hWnd, ref tempPoint);
+
+                    graphics.CopyFromScreen(tempPoint.x, tempPoint.y, 0, 0, new Size(width, height), CopyPixelOperation.SourceCopy);
+                }
             }
 
             return bmp;

@@ -14,6 +14,12 @@ using System.Diagnostics;
 
 namespace SlowCapture
 {
+    public enum CaptureMethod
+    {
+        PaintWindow,
+        DesktopCapture,
+    }
+
     public partial class MainForm : Form
     {
         CaptureOptions CaptureOptionsWindow = new CaptureOptions();
@@ -23,6 +29,9 @@ namespace SlowCapture
         private string WindowTitle = "";
         private bool MatchWindowTitle = false;
         private IntPtr MatchWindowHandle = IntPtr.Zero;
+
+        private bool TopmostOnly = false;
+        private CaptureMethod Method = CaptureMethod.PaintWindow;
 
         private bool ResizeOutput = false;
         public int ResizeOutputHeight = 720;
@@ -56,13 +65,17 @@ namespace SlowCapture
                     CaptureOptionsWindow.WindowName = WindowName;
                     CaptureOptionsWindow.WindowTitle = WindowTitle;
                     CaptureOptionsWindow.MatchTitle = MatchWindowTitle;
+                    CaptureOptionsWindow.TopmostOnly = TopmostOnly;
+                    CaptureOptionsWindow.Method = Method;
 
-                    if(CaptureOptionsWindow.ShowDialog(this) == DialogResult.OK)
+                    if (CaptureOptionsWindow.ShowDialog(this) == DialogResult.OK)
                     {
                         WindowName = CaptureOptionsWindow.WindowName;
                         WindowTitle = CaptureOptionsWindow.WindowTitle;
                         MatchWindowTitle = CaptureOptionsWindow.MatchTitle;
                         MatchWindowHandle = CaptureOptionsWindow.WindowHandle;
+                        TopmostOnly = CaptureOptionsWindow.TopmostOnly;
+                        Method = CaptureOptionsWindow.Method;
                     }
                 }
                 else if ((ID & 0xFFFF) == 0x3001)
@@ -283,6 +296,9 @@ namespace SlowCapture
                     System.Threading.Thread.Sleep(CaptureRate);
                 }
 
+                if (CaptureOptionsWindow.Visible)
+                    continue;
+
                 // Only look up the Window if we don't have one, or if the one we have is no longer a window or is hidden
                 if (MatchWindowHandle == IntPtr.Zero || !ExternalAPI.IsWindow(MatchWindowHandle) || !ExternalAPI.IsWindowVisible(MatchWindowHandle))
                 {
@@ -292,9 +308,12 @@ namespace SlowCapture
                     MatchWindowHandle = FindWindow(WindowName, WindowTitle, MatchWindowTitle);
                 }
 
+                if (TopmostOnly && ExternalAPI.GetForegroundWindow() != MatchWindowHandle)
+                    continue;
+
                 Bitmap Image = null;
                 if (MatchWindowHandle != IntPtr.Zero)
-                    Image = ExternalAPI.CaptureWindow(MatchWindowHandle);
+                    Image = ExternalAPI.CaptureWindow(MatchWindowHandle, Method);
                 
                 this.Invoke(UpdateCaptureCallback, Image);
             }
@@ -341,6 +360,15 @@ namespace SlowCapture
             ExternalAPI.GetPrivateProfileString("Capture", "Match Title", "False", TempString, 1024, SettingsFile);
             bool.TryParse(TempString.ToString(), out MatchWindowTitle);
 
+            ExternalAPI.GetPrivateProfileString("Capture", "Topmost Only", "False", TempString, 1024, SettingsFile);
+            bool.TryParse(TempString.ToString(), out TopmostOnly);
+
+            ExternalAPI.GetPrivateProfileString("Capture", "Capture Method", "", TempString, 1024, SettingsFile);
+            if (TempString.Length != 0)
+            {   
+                Enum.TryParse<CaptureMethod>(TempString.ToString(), out Method);
+            }
+
 
             ExternalAPI.GetPrivateProfileString("Settings", "Resize Output", "False", TempString, 1024, SettingsFile);
             bool.TryParse(TempString.ToString(), out ResizeOutput);
@@ -377,6 +405,8 @@ namespace SlowCapture
             ExternalAPI.WritePrivateProfileString("Capture", "Name", WindowName, SettingsFile);
             ExternalAPI.WritePrivateProfileString("Capture", "Title", WindowTitle, SettingsFile);
             ExternalAPI.WritePrivateProfileString("Capture", "Match Title", MatchWindowTitle.ToString(), SettingsFile);
+            ExternalAPI.WritePrivateProfileString("Capture", "Topmost Only", TopmostOnly.ToString(), SettingsFile);
+            ExternalAPI.WritePrivateProfileString("Capture", "Capture Method", Method.ToString(), SettingsFile);
 
             ExternalAPI.WritePrivateProfileString("Settings", "Resize Output", ResizeOutput.ToString(), SettingsFile);
             ExternalAPI.WritePrivateProfileString("Settings", "Output Size", string.Format("{0}, {1}", ResizeOutputWidth, ResizeOutputHeight), SettingsFile);
